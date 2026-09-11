@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="matrix">
+  <head>
+    <meta charset="utf-8" />
+    <title>VprGrid</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://p1.music.126.net" crossorigin />
+    <link rel="preconnect" href="https://p2.music.126.net" crossorigin />
+    <link rel="preconnect" href="https://coverartarchive.org" crossorigin />
+    <link rel="preconnect" href="https://archive.org" crossorigin />
+    <link rel="preconnect" href="https://cdn2.albumoftheyear.org" crossorigin />
+    <link rel="dns-prefetch" href="https://f4.bcbits.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Montserrat:wght@600;700&family=Noto+Sans+SC:wght@400;500;600&family=Roboto:wght@300;400;500&family=Space+Grotesk:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="shared/radar.css" />
+    <link rel="stylesheet" href="shared/themes.css" />
+  </head>
+  <body class="newtab">
+    <div id="bgfx" aria-hidden="true">
+      <div class="bgfx-ra ra-allied"></div>
+      <div class="bgfx-ra ra-soviet"></div>
+      <div class="bgfx-ra ra-scout"></div>
+    </div>
+    <div class="pills">
+      <button id="modetoggle" class="modebtn" type="button">▤ 完整应用</button>
+    </div>
+    <iframe id="appframe" class="appframe" title="VprGrid.SYS" hidden></iframe>
+    <div id="appdown" class="appdown" hidden>
+      <p class="appdown-kicker">FULL APP</p>
+      <h2 id="appdown-title">完整应用没有打开</h2>
+      <p id="appdown-body">完整应用现在没在跑，或插件设置里的地址不对。先把完整应用打开，再点重试。</p>
+      <div class="appdown-btns">
+        <button id="appdown-retry" type="button">重试</button>
+        <button id="appdown-wall" class="ghost" type="button">回到专辑墙</button>
+        <a id="appdown-settings" class="ghost" href="options.html" target="_blank">打开设置</a>
+      </div>
+    </div>
+    <div class="wrap">
+      <p class="ntbrand" aria-label="VprGrid">
+        <span class="ntbrand-name">VprGrid</span>
+      </p>
+      <form class="gsearch" id="websearch" action="https://www.google.com/search" method="get" autocomplete="off">
+        <span class="gicon" aria-hidden="true">⌕</span>
+        <input id="q" name="q" type="search" placeholder="搜索，或输入网址" autofocus spellcheck="false" />
+      </form>
+      <p class="searchvia" id="searchvia">搜索由 Google 提供</p>
+      <section class="wallbox" id="wallbox">
+        <div class="wallhandles" aria-hidden="true">
+          <span class="whandle wh-w" data-wall="w" title="左右拖动调整宽度"></span>
+          <span class="whandle wh-e" data-wall="e" title="左右拖动调整宽度"></span>
+          <span class="whandle wh-s" data-wall="s" title="上下拖动调整高度"></span>
+        </div>
+        <div class="wallhead">
+          <div class="weekbar">
+            <button id="prev" aria-label="上一月">‹</button>
+            <span class="label" id="weeklabel">…</span>
+            <button id="next" aria-label="下一月">›</button>
+            <span class="grainseg" role="group" aria-label="按月或按周">
+              <button id="grainmonth" type="button">月</button>
+              <button id="grainweek" class="on" type="button">周</button>
+            </span>
+            <span class="status" id="status"></span>
+          </div>
+        </div>
+        <div class="widgets">
+          <div class="widget wclock">
+            <span class="clock" id="clock">–:–</span>
+            <span class="wdate" id="wdate">–</span>
+          </div>
+          <div class="widget wweather" id="weatherw" hidden>
+            <span class="wicon" id="wicon"></span>
+            <span class="wtemp" id="wtemp"></span>
+            <span class="wdesc" id="wdesc"></span>
+          </div>
+          <div class="widget wnews">
+            <span class="newshead" id="newshead">音乐快讯</span>
+            <ul class="newslist" id="newslist"></ul>
+          </div>
+        </div>
+        <div class="wallscroll">
+          <div class="stack" id="grid"></div>
+        </div>
+        <div class="wallfoot">
+          <span id="ftleft">参考亲选置顶 · 雷达过筛补充</span>
+          <span class="wallbtns">
+            <span class="sizers">
+              <label class="sizer" id="sizerw"><span class="sizeraxis">↔</span><input id="wallsize" type="range" min="600" max="1080" step="10" value="920" title="调整墙宽" /></label>
+              <label class="sizer" id="sizerh"><span class="sizeraxis">↕</span><input id="wallhsize" type="range" min="96" max="176" step="4" value="128" title="调整封面高度" /></label>
+              <label class="sizer" id="sizercw"><span class="sizeraxis">▭</span><input id="coverwsize" type="range" min="72" max="200" step="4" value="128" title="调整封面宽度" /></label>
+              <label class="sizer" id="sizery"><span class="sizeraxis">⇅</span><input id="wallpos" type="range" min="-72" max="140" step="4" value="0" title="调整大框上下位置" /></label>
+              <label class="sizer" id="sizerv"><span class="sizeraxis">⇕</span><input id="wallstretch" type="range" min="0" max="220" step="8" value="0" title="上下拉长大框" /></label>
+            </span>
+            <button id="today" class="wallbtn" type="button">本月</button>
+            <button id="reload" class="wallbtn" type="button">刷新</button>
+            <a id="openapp" class="wallbtn" href="#" target="_blank" rel="noreferrer">完整应用 ↗</a>
+            <a id="ftsettings" class="wallbtn" href="options.html" target="_blank">设置</a>
+            <button id="langtoggle" class="wallbtn" type="button">EN</button>
+          </span>
+        </div>
+      </section>
+    </div>
+    <script>
+      (function () {
+        try {
+          var t = document.documentElement.getAttribute("data-theme");
+          if (t && t !== "matrix") return;
+          var h = document.getElementById("bgfx");
+          if (!h || h.querySelector(".prerain")) return;
+          var d = document.createElement("div");
+          d.className = "prerain";
+          d.setAttribute("aria-hidden", "true");
+          var g = "ﾅｱﾜｦﾊﾗﾝｼｿｷﾎｳﾔﾂﾈﾒｹﾙ0123456789=*+<>♪♫#";
+          var n = g.length;
+          var cols = Math.ceil((innerWidth || 800) / 16);
+          var rows = Math.ceil((innerHeight || 600) / 15) + 3;
+          var f = document.createDocumentFragment();
+          for (var i = 0; i < cols * rows; i++) {
+            var cell = document.createElement("span");
+            cell.textContent = g[(Math.random() * n) | 0];
+            f.appendChild(cell);
+          }
+          d.appendChild(f);
+          h.insertBefore(d, h.firstChild);
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" src="boot.js"></script>
+  </body>
+</html>

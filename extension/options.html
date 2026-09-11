@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>VprGrid.SYS 雷达 · 设置</title>
+    <link rel="stylesheet" href="shared/radar.css" />
+    <style>
+      .field { margin-top: 22px; max-width: 640px; }
+      .field label { display: block; font-size: 14px; }
+      .field .hint { margin-top: 4px; font-size: 12px; color: var(--subtle); line-height: 1.7; }
+      .field input, .field textarea {
+        margin-top: 10px;
+        width: 100%;
+        background: var(--surface);
+        color: var(--fg);
+        border: 0;
+        border-radius: 10px;
+        box-shadow: 0 0 0 1px var(--border);
+        padding: 11px 12px;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+      }
+      .field textarea { font-family: ui-monospace, Menlo, monospace; font-size: 11px; min-height: 120px; resize: vertical; }
+      .field input:focus, .field textarea:focus { box-shadow: 0 0 0 2px var(--accent); }
+      .save {
+        margin-top: 24px;
+        appearance: none;
+        border: 0;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #14100a;
+        font-size: 14px;
+        padding: 10px 22px;
+        cursor: pointer;
+        transition: transform 120ms ease;
+      }
+      .save:active { transform: scale(0.96); }
+      #saved { margin-left: 12px; font-size: 12px; color: var(--accent); opacity: 0; transition: opacity 300ms; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="brand">VprGrid.SYS · SETTINGS</p>
+      <h1>插件设置</h1>
+
+      <div class="field">
+        <label for="base">应用地址</label>
+        <p class="hint">完整应用的网址。留空则自动用本机默认地址；新标签页打开时也会自己探测正在跑的应用。</p>
+        <input id="base" type="url" placeholder="http://127.0.0.1:8080" spellcheck="false" />
+      </div>
+
+      <div class="field">
+        <label for="sync">同步码(可选)</label>
+        <p class="hint">
+          在应用的「参考订阅」面板点「复制同步码」,粘贴到这里。之后新标签页与弹窗会按你的口味过筛,并展示你自订的参考池(含 RYM/AOTY/艺人追踪源)。留空则使用内置默认参考。
+        </p>
+        <textarea id="sync" placeholder='{"v":1,"taste":[…],"entries":[…]}' spellcheck="false"></textarea>
+      </div>
+
+      <div>
+        <button class="save" id="save">保存</button>
+        <span id="saved">已保存</span>
+      </div>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>

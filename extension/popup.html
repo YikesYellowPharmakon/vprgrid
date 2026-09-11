@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="matrix">
+  <head>
+    <meta charset="utf-8" />
+    <title>VprGrid.SYS 雷达</title>
+    <link rel="stylesheet" href="shared/radar.css" />
+    <link rel="stylesheet" href="shared/themes.css" />
+  </head>
+  <body class="popup">
+    <div id="bgfx" aria-hidden="true">
+      <div class="bgfx-ra ra-allied"></div>
+      <div class="bgfx-ra ra-soviet"></div>
+      <div class="bgfx-ra ra-scout"></div>
+    </div>
+    <div class="pills">
+      <button id="langtoggle" class="modebtn" type="button">EN</button>
+      <button id="modetoggle" class="modebtn" type="button">▤ 完整应用</button>
+    </div>
+    <iframe id="appframe" class="appframe" title="VprGrid.SYS" hidden></iframe>
+    <div id="appdown" class="appdown" hidden>
+      <p class="appdown-kicker">FULL APP</p>
+      <h2 id="appdown-title">完整应用没有打开</h2>
+      <p id="appdown-body">完整应用现在没在跑，或插件设置里的地址不对。先把完整应用打开，再点重试。</p>
+      <div class="appdown-btns">
+        <button id="appdown-retry" type="button">重试</button>
+        <button id="appdown-wall" class="ghost" type="button">回到专辑墙</button>
+        <a id="appdown-settings" class="ghost" href="options.html" target="_blank">打开设置</a>
+      </div>
+    </div>
+    <div class="wrap">
+      <p class="brand">VprGrid.SYS</p>
+      <h1 id="pagetitle">Weekly Album Radar</h1>
+      <section class="wallbox">
+        <div class="wallhead">
+          <div class="weekbar">
+            <button id="prev" aria-label="上一月">‹</button>
+            <span class="label" id="weeklabel">…</span>
+            <button id="next" aria-label="下一月">›</button>
+            <span class="grainseg" role="group" aria-label="按月或按周">
+              <button id="grainmonth" type="button">月</button>
+              <button id="grainweek" class="on" type="button">周</button>
+            </span>
+            <span class="status" id="status"></span>
+          </div>
+        </div>
+        <div class="wallscroll">
+          <div class="grid" id="grid"></div>
+        </div>
+      </section>
+      <div class="footer">
+        <a id="openapp" href="#" target="_blank" rel="noreferrer">完整应用 ↗</a>
+        <a id="ftsettings" href="options.html" target="_blank">设置</a>
+      </div>
+    </div>
+    <script type="module" src="boot.js"></script>
+  </body>
+</html>

@@ -1,0 +1,360 @@
+/* 与主应用同源的九款主题:配色变量 + html 静态背景 + #bgfx 动效层 + 卡片调和参数。
+   radar.js 把同步码里的主题 id 写到 <html data-theme>,这里接管全部视觉;
+   自定义主题(id 不在列表内)走 data-theme="synced" + 内联变量兜底。 */
+
+/* ————— 动效层骨架:固定铺满、垫在内容下(z-index:-1)、背景之上 ————— */
+#bgfx {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+#bgfx::before,
+#bgfx::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  will-change: transform;
+}
+#bgfx > .bgfx-ra {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+
+/* 有主题接管时 body 不再自画背景,让 html 的主题背景与 #bgfx 透出 */
+html[data-theme] body {
+  background-color: transparent;
+  background-image: none;
+}
+html[data-theme] {
+  background-color: var(--bg);
+}
+
+/* ————— Matrix(默认) ————— */
+html[data-theme="matrix"] {
+  --bg: #020703;
+  --surface: #051309;
+  --raised: #0a2112;
+  --fg: #a7ffb9;
+  --muted: #58c273;
+  --subtle: #33804a;
+  --accent: #00ff66;
+  --border: rgb(0 255 102 / 0.18);
+  --card-r: 3px;
+  --card-line: 0 0 0 1px rgb(0 255 102 / 0.22);
+  --card-line-hover: 0 0 0 1px rgb(0 255 102 / 0.45), 0 0 14px rgb(0 255 102 / 0.18);
+  --font-body: "IBM Plex Mono", ui-monospace, "PingFang SC", monospace;
+  --font-display: "IBM Plex Mono", ui-monospace, "PingFang SC", monospace;
+  background-image:
+    radial-gradient(60% 40% at 50% -10%, rgb(0 255 102 / 0.11), transparent 60%),
+    radial-gradient(90% 55% at 50% 120%, rgb(0 0 0 / 0.55), transparent 62%);
+  background-attachment: fixed;
+}
+html[data-theme="matrix"] #bgfx::after {
+  background-image: none;
+  animation: none;
+}
+
+#bgfx .prerain {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  grid-template-columns: repeat(auto-fill, 16px);
+  grid-auto-rows: 15px;
+  justify-items: center;
+  align-items: center;
+  font: 15px/1 ui-monospace, "IBM Plex Mono", monospace;
+  letter-spacing: 0;
+  color: rgb(0 255 102 / 0.2);
+  user-select: none;
+  pointer-events: none;
+  animation: fx-prerain-fall 0.85s linear infinite;
+}
+#bgfx .prerain > span {
+  display: flex;
+  width: 16px;
+  height: 15px;
+  align-items: center;
+  justify-content: center;
+}
+html:not([data-theme]) #bgfx .prerain,
+html[data-theme="matrix"] #bgfx .prerain {
+  display: grid;
+}
+html.rain-live #bgfx .prerain {
+  opacity: 0;
+  transition: opacity 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+html:not([data-theme]) #bgfx::before,
+html[data-theme="matrix"] #bgfx::before {
+  background-image: none;
+  animation: none;
+}
+@keyframes fx-prerain-fall {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -15px, 0); }
+}
+
+/* ————— Cyber Neon ————— */
+html[data-theme="cyber-neon"] {
+  --bg: #0a0716;
+  --surface: #140f26;
+  --raised: #1e1738;
+  --fg: #eaf2ff;
+  --muted: #9aa4d6;
+  --subtle: #656fa3;
+  --accent: #00e5ff;
+  --border: rgb(0 229 255 / 0.18);
+  --card-r: 10px;
+  --card-line: 0 0 0 1px rgb(0 229 255 / 0.2), 0 0 18px rgb(255 61 242 / 0.06);
+  --card-line-hover: 0 0 0 1px rgb(0 229 255 / 0.5), 0 0 22px rgb(0 229 255 / 0.22);
+  --font-body: "Space Grotesk", "Trebuchet MS", "PingFang SC", sans-serif;
+  --font-display: "Space Grotesk", "Trebuchet MS", "PingFang SC", sans-serif;
+  background-image:
+    radial-gradient(60% 42% at 82% -6%, rgb(255 61 242 / 0.18), transparent 60%),
+    radial-gradient(55% 40% at 8% 4%, rgb(0 229 255 / 0.16), transparent 60%),
+    radial-gradient(75% 42% at 50% 110%, rgb(255 61 242 / 0.16), transparent 66%),
+    radial-gradient(90% 22% at 50% 104%, rgb(255 170 80 / 0.12), transparent 70%),
+    radial-gradient(rgb(0 229 255 / 0.07) 1px, transparent 1.3px),
+    repeating-linear-gradient(90deg, transparent 0 118px, rgb(0 229 255 / 0.05) 118px 120px, transparent 120px 236px),
+    linear-gradient(rgb(0 229 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 229 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(rgb(255 61 242 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 61 242 / 0.035) 1px, transparent 1px);
+  background-size: auto, auto, auto, auto, 26px 34px, auto, 44px 44px, 44px 44px, 176px 176px, 176px 176px;
+}
+html[data-theme="cyber-neon"] #bgfx {
+  background-image: linear-gradient(112deg, transparent 0 43%, rgb(0 229 255 / 0.06) 49%, rgb(255 61 242 / 0.04) 53%, transparent 60%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  animation: fx-neon-search 26s ease-in-out infinite alternate;
+}
+html[data-theme="cyber-neon"] #bgfx::before {
+  inset: -22%;
+  background-image:
+    radial-gradient(26% 22% at 28% 32%, rgb(0 229 255 / 0.15), transparent 72%),
+    radial-gradient(24% 20% at 74% 66%, rgb(255 61 242 / 0.15), transparent 72%),
+    radial-gradient(20% 16% at 56% 88%, rgb(255 170 80 / 0.1), transparent 72%);
+  background-repeat: no-repeat;
+  animation: fx-neon-orbit 44s ease-in-out infinite alternate;
+}
+html[data-theme="cyber-neon"] #bgfx::after {
+  background-image:
+    radial-gradient(rgb(234 242 255 / 0.15) 1px, transparent 1.5px),
+    radial-gradient(rgb(0 229 255 / 0.1) 1px, transparent 1.8px);
+  background-size: 110px 110px, 220px 220px;
+  will-change: background-position;
+  animation: fx-neon-stars 60s linear infinite, fx-neon-twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes fx-neon-search { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+@keyframes fx-neon-orbit {
+  from { transform: translate3d(-3.5%, -2.5%, 0) scale(1); }
+  to { transform: translate3d(3.5%, 2.5%, 0) scale(1.1); }
+}
+@keyframes fx-neon-stars {
+  from { background-position: 0 0, 70px 30px; }
+  to { background-position: 660px 660px, 510px 250px; }
+}
+@keyframes fx-neon-twinkle { from { opacity: 0.45; } to { opacity: 1; } }
+
+/* ————— Grainy Blur ————— */
+html[data-theme="grainy-blur"] {
+  --bg: #141019;
+  --surface: #1d1726;
+  --raised: #282033;
+  --fg: #f2ecf6;
+  --muted: #b3a6c4;
+  --subtle: #7f7392;
+  --accent: #c9a0ff;
+  --border: rgb(242 236 246 / 0.1);
+  --card-r: 12px;
+  --card-line: 0 0 0 1px rgb(242 236 246 / 0.08);
+  --card-line-hover: 0 0 0 1px rgb(201 160 255 / 0.35);
+  --font-body: "IBM Plex Sans", "Helvetica Neue", "PingFang SC", sans-serif;
+  --font-display: "IBM Plex Sans", "Helvetica Neue", "PingFang SC", sans-serif;
+  background-image:
+    conic-gradient(from 210deg at 68% 38%, rgb(201 160 255 / 0.06), transparent 28%, rgb(96 165 250 / 0.06) 55%, transparent 78%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+  background-size: auto, 140px 140px;
+  background-blend-mode: normal, overlay;
+}
+html[data-theme="grainy-blur"] #bgfx {
+  background-image: linear-gradient(150deg, transparent 0 44%, rgb(201 160 255 / 0.06) 52%, transparent 62%);
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  animation: fx-blur-beam 36s ease-in-out infinite alternate;
+}
+html[data-theme="grainy-blur"] #bgfx::before {
+  inset: -20%;
+  background-image:
+    radial-gradient(34% 28% at 24% 16%, rgb(201 160 255 / 0.26), transparent 72%),
+    radial-gradient(32% 28% at 80% 22%, rgb(255 158 118 / 0.2), transparent 72%),
+    radial-gradient(24% 20% at 68% 52%, rgb(94 234 212 / 0.1), transparent 72%);
+  background-repeat: no-repeat;
+  animation: fx-blob-a 42s ease-in-out infinite alternate;
+}
+html[data-theme="grainy-blur"] #bgfx::after {
+  inset: -20%;
+  background-image:
+    radial-gradient(38% 32% at 56% 84%, rgb(96 165 250 / 0.18), transparent 72%),
+    radial-gradient(28% 24% at 26% 62%, rgb(244 114 182 / 0.14), transparent 72%),
+    radial-gradient(22% 18% at 88% 78%, rgb(240 201 135 / 0.12), transparent 72%);
+  background-repeat: no-repeat;
+  animation: fx-blob-b 58s ease-in-out infinite alternate-reverse;
+}
+@keyframes fx-blur-beam { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+@keyframes fx-blob-a {
+  from { transform: translate3d(-4%, -3%, 0) scale(1) rotate(0deg); }
+  to { transform: translate3d(5%, 4%, 0) scale(1.14) rotate(6deg); }
+}
+@keyframes fx-blob-b {
+  from { transform: translate3d(4%, 3%, 0) scale(1.1) rotate(4deg); }
+  to { transform: translate3d(-5%, -4%, 0) scale(1) rotate(-4deg); }
+}
+
+/* ————— Red Alert(苏式警报红:战术网格 + 雷达扫掠 + 警报灯 + 数据刻度) ————— */
+html[data-theme="red-alert"] {
+  --bg: #130604;
+  --surface: #1d0c08;
+  --raised: #2a120c;
+  --fg: #f5e6dc;
+  --muted: #c79a8a;
+  --subtle: #8a6355;
+  --accent: #ff2b1f;
+  --border: rgb(255 43 31 / 0.26);
+  --card-r: 3px;
+  --card-line: 0 0 0 1px rgb(255 43 31 / 0.28);
+  --card-line-hover: 0 0 0 1px rgb(255 43 31 / 0.55), 0 0 16px rgb(255 43 31 / 0.22);
+  --font-body: "IBM Plex Mono", ui-monospace, "PingFang SC", monospace;
+  --font-display: "IBM Plex Mono", ui-monospace, "PingFang SC", monospace;
+  background-image:
+    radial-gradient(55% 36% at 50% -8%, rgb(255 43 31 / 0.16), transparent 60%),
+    radial-gradient(90% 55% at 50% 118%, rgb(0 0 0 / 0.62), transparent 65%);
+}
+html[data-theme="red-alert"] #bgfx {
+  background-image:
+    repeating-linear-gradient(0deg, rgb(255 43 31 / 0.03) 0 1px, transparent 1px 4px),
+    linear-gradient(rgb(255 43 31 / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 43 31 / 0.1) 1px, transparent 1px),
+    linear-gradient(rgb(255 43 31 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 43 31 / 0.045) 1px, transparent 1px),
+    repeating-radial-gradient(circle at 76% 24%, rgb(255 43 31 / 0.05) 0 1px, transparent 1px 110px),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22460%22%20height%3D%22460%22%3E%3Cg%20stroke%3D%22%23ff2b1f%22%20stroke-opacity%3D%22.14%22%20fill%3D%22none%22%3E%3Crect%20x%3D%2248%22%20y%3D%2270%22%20width%3D%2242%22%20height%3D%2228%22%2F%3E%3Crect%20x%3D%22310%22%20y%3D%22240%22%20width%3D%2236%22%20height%3D%2236%22%2F%3E%3Cpath%20d%3D%22M200%20380h28v-16h16v-12%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.1%22%3E%3Crect%20x%3D%22400%22%20y%3D%2290%22%20width%3D%2218%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%22120%22%20y%3D%22300%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: auto, 230px 230px, 230px 230px, 46px 46px, 46px 46px, auto, 460px 460px;
+  will-change: background-position, opacity;
+  animation:
+    fx-ra-map 52s linear infinite,
+    fx-ra-crt 3.4s ease-in-out infinite alternate;
+}
+html[data-theme="red-alert"] #bgfx::before {
+  inset: -40%;
+  background-image: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0 282deg,
+    rgb(255 43 31 / 0.02) 304deg,
+    rgb(255 43 31 / 0.08) 336deg,
+    rgb(255 43 31 / 0.16) 354deg,
+    rgb(255 179 71 / 0.24) 359.5deg,
+    transparent 360deg
+  );
+  background-repeat: no-repeat;
+  will-change: transform;
+  animation: fx-ra-sweep 7s linear infinite;
+}
+html[data-theme="red-alert"] #bgfx > .bgfx-ra {
+  display: block;
+  will-change: background-position;
+}
+html[data-theme="red-alert"] #bgfx > .ra-allied {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22720%22%20height%3D%22640%22%3E%3Cg%20stroke%3D%22%23ffb347%22%20stroke-opacity%3D%22.22%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M78%2064h-10v10M118%2064h10v10M78%20108h-10v-10M118%20108h10v-10%22%2F%3E%3Cpath%20d%3D%22M402%20286h-8v8M432%20286h8v8M402%20316h-8v-8M432%20316h8v-8%22%2F%3E%3Cpath%20d%3D%22M168%20470h-7v7M194%20470h7v7M168%20496h-7v-7M194%20496h7v-7%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.22%22%3E%3Crect%20x%3D%2272%22%20y%3D%2256%22%20width%3D%2232%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%22398%22%20y%3D%22278%22%20width%3D%2226%22%20height%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23ff2b1f%22%20fill-opacity%3D%22.24%22%3E%3Crect%20x%3D%2286%22%20y%3D%2276%22%20width%3D%2216%22%20height%3D%2216%22%2F%3E%3Crect%20x%3D%22248%22%20y%3D%22188%22%20width%3D%2212%22%20height%3D%2212%22%2F%3E%3Crect%20x%3D%22410%22%20y%3D%22296%22%20width%3D%2214%22%20height%3D%2214%22%2F%3E%3Crect%20x%3D%22560%22%20y%3D%22422%22%20width%3D%2211%22%20height%3D%2211%22%2F%3E%3Crect%20x%3D%22176%22%20y%3D%22478%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%22320%22%20y%3D%22540%22%20width%3D%229%22%20height%3D%229%22%2F%3E%3C%2Fg%3E%3Crect%20x%3D%22640%22%20y%3D%22240%22%20width%3D%228%22%20height%3D%228%22%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.2%22%2F%3E%3C%2Fsvg%3E");
+  background-size: 720px 640px;
+  animation: fx-ra-allied 44s linear infinite;
+}
+html[data-theme="red-alert"] #bgfx > .ra-soviet {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22720%22%3E%3Cg%20stroke%3D%22%23ff2b1f%22%20stroke-opacity%3D%22.28%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M70%20120l11%2019h-22z%22%2F%3E%3Cpath%20d%3D%22M310%20268l10%2017h-20z%22%2F%3E%3Cpath%20d%3D%22M490%20510l9%2016h-18z%22%2F%3E%3Cpath%20d%3D%22M200%20600l8%2014h-16z%22%2F%3E%3Ccircle%20cx%3D%22430%22%20cy%3D%2290%22%20r%3D%2214%22%2F%3E%3Cpath%20d%3D%22M430%2070v10M430%20100v10M410%2090h10M440%2090h10%22%2F%3E%3C%2Fg%3E%3Crect%20x%3D%22140%22%20y%3D%22400%22%20width%3D%2212%22%20height%3D%2212%22%20fill%3D%22%23ff2b1f%22%20fill-opacity%3D%22.22%22%2F%3E%3Crect%20x%3D%22560%22%20y%3D%22340%22%20width%3D%229%22%20height%3D%229%22%20fill%3D%22%23ff2b1f%22%20fill-opacity%3D%22.16%22%2F%3E%3C%2Fsvg%3E");
+  background-size: 640px 720px;
+  animation: fx-ra-soviet 36s linear infinite;
+}
+html[data-theme="red-alert"] #bgfx > .ra-scout {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22520%22%20height%3D%22480%22%3E%3Cg%20stroke%3D%22%23ffb347%22%20stroke-opacity%3D%22.2%22%20fill%3D%22none%22%20stroke-width%3D%221.5%22%3E%3Cpath%20d%3D%22M48%20210l8-8%208%208-8%208z%22%2F%3E%3Cpath%20d%3D%22M390%2070l6-6%206%206-6%206z%22%2F%3E%3Cpath%20d%3D%22M300%20360l7-7%207%207-7%207z%22%2F%3E%3C%2Fg%3E%3Crect%20x%3D%22180%22%20y%3D%22300%22%20width%3D%227%22%20height%3D%227%22%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.16%22%2F%3E%3C%2Fsvg%3E");
+  background-size: 520px 480px;
+  animation: fx-ra-scout 71s linear infinite;
+}
+html[data-theme="red-alert"] #bgfx::after {
+  background-image:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%22480%22%3E%3Cg%20stroke%3D%22%23ffb347%22%20stroke-opacity%3D%22.13%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%227%2016%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M-40%20400L520-40%22%2F%3E%3Cpath%20d%3D%22M500%2080L-40%20280%22%2F%3E%3Cpath%20d%3D%22M80%20500L200%20200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='520'%3E%3Cg fill='%23ff2b1f' fill-opacity='.13'%3E%3Crect x='22' y='30' width='14' height='2'/%3E%3Crect x='22' y='96' width='9' height='2'/%3E%3Crect x='22' y='188' width='16' height='2'/%3E%3Crect x='22' y='274' width='7' height='2'/%3E%3Crect x='22' y='368' width='12' height='2'/%3E%3Crect x='22' y='452' width='10' height='2'/%3E%3C/g%3E%3Cg fill='%23ffb347' fill-opacity='.11'%3E%3Crect x='198' y='64' width='11' height='2'/%3E%3Crect x='198' y='170' width='15' height='2'/%3E%3Crect x='198' y='262' width='8' height='2'/%3E%3Crect x='198' y='340' width='13' height='2'/%3E%3Crect x='198' y='430' width='9' height='2'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='680'%3E%3Cg fill='%23ff2b1f' fill-opacity='.08'%3E%3Crect x='150' y='48' width='10' height='2'/%3E%3Crect x='150' y='176' width='14' height='2'/%3E%3Crect x='150' y='330' width='8' height='2'/%3E%3Crect x='150' y='474' width='12' height='2'/%3E%3Crect x='150' y='612' width='9' height='2'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(38% 30% at 12% 16%, rgb(255 43 31 / 0.1), transparent 70%),
+    radial-gradient(30% 24% at 88% 78%, rgb(255 179 71 / 0.08), transparent 70%);
+  background-size: 480px 480px, 240px 520px, 320px 680px, 100% 100%, 100% 100%;
+  will-change: background-position, opacity;
+  animation: fx-ra-field 56s linear infinite, fx-ra-alarm 2.8s ease-in-out infinite alternate;
+}
+@keyframes fx-ra-map {
+  from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 0, 230px 230px, 230px 230px, 230px 230px, 230px 230px, 0 0, 460px 460px; }
+}
+@keyframes fx-ra-crt {
+  from { opacity: 0.72; }
+  to { opacity: 1; }
+}
+@keyframes fx-ra-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes fx-ra-allied {
+  from { background-position: 0 0; }
+  to { background-position: 720px -640px; }
+}
+@keyframes fx-ra-soviet {
+  from { background-position: 0 0; }
+  to { background-position: -1280px 720px; }
+}
+@keyframes fx-ra-scout {
+  from { background-position: 0 0; }
+  to { background-position: 520px -960px; }
+}
+@keyframes fx-ra-field {
+  from { background-position: 0 0, 0 0, 90px 210px, 0 0, 0 0; }
+  to { background-position: 480px -480px, 0 1560px, 90px -1150px, 0 0, 0 0; }
+}
+@keyframes fx-ra-alarm {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+/* ————— 自定义主题兜底(data-theme="synced"):配色由内联变量注入 ————— */
+html[data-theme="synced"] {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+html[data-theme="synced"] #bgfx::before {
+  inset: -20%;
+  background-image:
+    radial-gradient(30% 24% at 22% 14%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
+    radial-gradient(26% 22% at 82% 88%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+  background-repeat: no-repeat;
+  animation: fx-neon-orbit 48s ease-in-out infinite alternate;
+}
+
+/* 主题字体接管(有 --font-body 的主题生效) */
+html[data-theme] body {
+  font-family: var(--font-body, "IBM Plex Sans", "PingFang SC", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #bgfx::before,
+  #bgfx::after,
+  #bgfx > .bgfx-ra {
+    animation: none !important;
+  }
+}

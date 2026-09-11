@@ -1,0 +1,26 @@
+.grain-import-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 999999;
+  appearance: none;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 18px;
+  font-size: 13px;
+  font-family: "IBM Plex Sans", -apple-system, "PingFang SC", sans-serif;
+  cursor: pointer;
+  color: var(--vpr-fg, #8dffa3);
+  background: var(--vpr-bg, #020703);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--vpr-accent, #00ff66) 55%, transparent),
+    0 0 18px color-mix(in srgb, var(--vpr-accent, #00ff66) 28%, transparent);
+  transition: transform 120ms ease, box-shadow 200ms ease;
+}
+.grain-import-btn:hover {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--vpr-accent, #00ff66) 85%, transparent),
+    0 0 22px color-mix(in srgb, var(--vpr-accent, #00ff66) 40%, transparent);
+}
+.grain-import-btn:active { transform: scale(0.96); }
+.grain-import-btn[disabled] { opacity: 0.75; cursor: progress; }

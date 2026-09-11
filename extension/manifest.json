@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "VprGrid",
+  "description": "近期发行缩略图墙(新标签页 + 工具栏弹窗),并可从 RYM / AOTY 列表页一键导入参考订阅。",
+  "version": "1.5.42",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "VprGrid",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "options_page": "options.html",
+  "background": { "service_worker": "bg.js" },
+  "permissions": ["storage", "clipboardWrite", "tabs", "windows", "alarms"],
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*", "https://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://rateyourmusic.com/collection/*"],
+      "js": ["content/import-ui.js", "content/rym.js"],
+      "css": ["content/import.css"]
+    },
+    {
+      "matches": ["https://www.albumoftheyear.org/user/*", "https://albumoftheyear.org/user/*"],
+      "js": ["content/import-ui.js", "content/aoty.js"],
+      "css": ["content/import.css"]
+    },
+    {
+      "matches": [
+        "https://rateyourmusic.com/charts/*",
+        "https://rateyourmusic.com/new-releases/",
+        "https://rateyourmusic.com/new-releases/*",
+        "https://www.albumoftheyear.org/releases/",
+        "https://www.albumoftheyear.org/releases/*",
+        "https://www.albumoftheyear.org/*/releases/",
+        "https://www.albumoftheyear.org/*/releases/*",
+        "https://albumoftheyear.org/releases/",
+        "https://albumoftheyear.org/releases/*"
+      ],
+      "js": ["content/import-ui.js", "content/new-music.js"],
+      "css": ["content/import.css"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

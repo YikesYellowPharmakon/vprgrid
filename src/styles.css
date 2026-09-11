@@ -1,0 +1,650 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Matrix(默认主题):黑底磷光绿,等宽字体 + 扫描线。无 data-theme 时即此皮肤。 */
+@theme {
+  --color-bg: #020703;
+  --color-surface: #051309;
+  --color-raised: #0a2112;
+  --color-fg: #a7ffb9;
+  --color-muted: #58c273;
+  --color-subtle: #33804a;
+  --color-accent: #00ff66;
+  --color-accent-foreground: #01130a;
+  --color-border: rgb(0 255 102 / 0.18);
+  --color-ring: #00ff66;
+  --color-danger: #ff6d5e;
+  --color-gold: #b8ff4f;
+  --font-sans: "IBM Plex Mono", "PingFang SC", "Noto Sans SC", ui-monospace, monospace;
+  --font-display: "IBM Plex Mono", "PingFang SC", ui-monospace, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --shadow-border: 0 0 0 1px rgb(0 255 102 / 0.22);
+  --shadow-border-hover: 0 0 0 1px rgb(0 255 102 / 0.45), 0 0 14px rgb(0 255 102 / 0.18);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-quick: 90ms;
+  --motion-fast: 160ms;
+  --motion-slow: 400ms;
+}
+
+@layer base {
+  /* 静态背景层全部画在 html 上:body 保持透明,让 #bgfx 动效层(z-index:-1)
+     能垫在「内容之下、背景之上」——这是动态背景不遮内容的关键。 */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    /* Matrix 静态底:只留磷光与暗角,不再画网格 */
+    background-image:
+      radial-gradient(60% 40% at 50% -10%, rgb(0 255 102 / 0.11), transparent 60%),
+      radial-gradient(90% 55% at 50% 120%, rgb(0 0 0 / 0.55), transparent 62%);
+    background-attachment: fixed;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: transparent;
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    line-height: 1.65;
+    letter-spacing: 0.004em;
+    font-feature-settings: "ss01" on, "cv05" on;
+  }
+
+  /* 质感反馈:所有可点元素统一的按压回弹与过渡 */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+    transition:
+      transform var(--motion-quick) var(--ease-out),
+      box-shadow var(--motion-fast) var(--ease-out),
+      background-color var(--motion-quick) var(--ease-out),
+      border-color var(--motion-quick) var(--ease-out),
+      color var(--motion-quick) var(--ease-out),
+      opacity var(--motion-quick) var(--ease-out);
+  }
+
+  button:not(:disabled):active,
+  [role="button"]:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+    line-height: 1.25;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+    color: var(--color-fg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 左上角字标:2010s 几何黑体 + 挤出厚度(顶光、侧面、落影),字本身有体积。 */
+.brandmark,
+.masthead-title {
+  font-family: Montserrat, "Segoe UI", "Helvetica Neue", "Noto Sans SC", sans-serif;
+  font-weight: 700;
+  line-height: 1.12;
+  color: color-mix(in srgb, var(--color-muted) 90%, var(--color-subtle));
+  text-shadow:
+    0 -0.03em 0 color-mix(in srgb, var(--color-muted) 70%, var(--color-subtle)),
+    0.05em 0.05em 0 color-mix(in srgb, var(--color-accent) 38%, #042010),
+    0.095em 0.095em 0 color-mix(in srgb, var(--color-accent) 26%, #03150b),
+    0.14em 0.14em 0 color-mix(in srgb, var(--color-accent) 14%, #020d07),
+    0.19em 0.23em 0.22em rgb(0 0 0 / 0.5);
+}
+.masthead {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.28em;
+}
+.brandmark {
+  font-size: clamp(1.7rem, 3.2vw, 2.25rem);
+  letter-spacing: 0.16em;
+}
+.masthead-title {
+  margin: 0;
+  font-size: 0.92rem;
+  letter-spacing: 0.34em;
+}
+
+/* ————————————————————— 动态背景层 #bgfx —————————————————————
+   固定铺满视口、z-index:-1(垫在内容下、html 静态背景上)。
+   每个主题两条动画层(::before / ::after),只动 transform / opacity /
+   background-position,平铺层的位移取平铺尺寸整数倍保证无缝循环。 */
+#bgfx {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+#bgfx::before,
+#bgfx::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  will-change: transform;
+}
+/* Red Alert 额外行军层:默认隐藏,仅该主题打开,各走独立航向 */
+#bgfx > .bgfx-ra {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+
+/* Matrix 默认不再用整屏下扫绿光,只留数字雨 */
+#bgfx::after {
+  background-image: none;
+  animation: none;
+}
+
+/* 数字雨未就绪时的即看底:与雨列同距,无网格,canvas 淡入后收起 */
+#bgfx .prerain {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  grid-template-columns: repeat(auto-fill, 16px);
+  grid-auto-rows: 15px;
+  justify-items: center;
+  align-items: center;
+  font: 15px/1 ui-monospace, "IBM Plex Mono", monospace;
+  letter-spacing: 0;
+  color: rgb(0 255 102 / 0.2);
+  user-select: none;
+  pointer-events: none;
+  animation: fx-prerain-fall 0.85s linear infinite;
+}
+#bgfx .prerain > span {
+  display: flex;
+  width: 16px;
+  height: 15px;
+  align-items: center;
+  justify-content: center;
+}
+html:not([data-theme]) #bgfx .prerain,
+html[data-theme="matrix"] #bgfx .prerain {
+  display: none;
+}
+html.rain-live #bgfx .prerain {
+  opacity: 0;
+  transition: opacity 900ms var(--ease-smooth-out);
+}
+html:not([data-theme]) #bgfx::before,
+html[data-theme="matrix"] #bgfx::before {
+  background-image: none;
+  animation: none;
+}
+@keyframes fx-prerain-fall {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -15px, 0); }
+}
+.statbar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35em;
+  row-gap: 0.15em;
+}
+.stat-pool {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35em;
+}
+.album-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 92px;
+}
+.album-tile {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
+.stat-pool .stat-num {
+  display: inline-block;
+  min-width: 2.4em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+  transition: opacity var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out);
+}
+.stat-pool.is-pending .stat-num {
+  color: var(--color-subtle);
+  animation: stat-pulse 1.25s var(--ease-out) infinite;
+}
+@keyframes stat-pulse {
+  50% { opacity: 0.32; }
+}
+
+.load-skel {
+  animation: page-enter 520ms var(--ease-smooth-out) both;
+}
+.load-skel .sk {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-raised);
+}
+.load-skel .sk::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-accent) 14%, transparent),
+    transparent
+  );
+  animation: sk-shimmer 1.45s var(--ease-out) infinite;
+}
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sk-shimmer {
+  from { transform: translate3d(-100%, 0, 0); }
+  to { transform: translate3d(100%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #bgfx .prerain {
+    display: none !important;
+  }
+  .stat-pool.is-pending .stat-num,
+  .load-skel,
+  .load-skel .sk::after {
+    animation: none;
+  }
+}
+
+/* ————————————————————— 皮肤：只换色彩 / 字体 / 材质 / 动效 ————————————————————— */
+
+/* Matrix 即基础样式:data-theme="matrix" 不需要任何覆盖规则。 */
+
+/* Cyber Neon：深夜靛紫 + 青品霓虹辉光(Blade Runner 式夜城) */
+html[data-theme="cyber-neon"] {
+  --color-bg: #0a0716;
+  --color-surface: #140f26;
+  --color-raised: #1e1738;
+  --color-fg: #eaf2ff;
+  --color-muted: #9aa4d6;
+  --color-subtle: #656fa3;
+  --color-accent: #00e5ff;
+  --color-accent-foreground: #051018;
+  --color-border: rgb(0 229 255 / 0.18);
+  --color-ring: #ff3df2;
+  --color-danger: #ff5f7a;
+  --color-gold: #ffd166;
+  --font-sans: "Space Grotesk", "PingFang SC", "Noto Sans SC", ui-sans-serif, sans-serif;
+  --font-display: "Space Grotesk", "PingFang SC", "Noto Sans SC", ui-sans-serif, sans-serif;
+  --shadow-border: 0 0 0 1px rgb(0 229 255 / 0.2), 0 0 18px rgb(255 61 242 / 0.06);
+  --shadow-border-hover: 0 0 0 1px rgb(0 229 255 / 0.5), 0 0 22px rgb(0 229 255 / 0.22);
+}
+html[data-theme="cyber-neon"] {
+  /* 静态底:双色辉光 + 琥珀地平线 + 楼宇灯窗 + 霓虹灯柱 + 双层网格景深 */
+  background-image:
+    radial-gradient(60% 42% at 82% -6%, rgb(255 61 242 / 0.18), transparent 60%),
+    radial-gradient(55% 40% at 8% 4%, rgb(0 229 255 / 0.16), transparent 60%),
+    radial-gradient(75% 42% at 50% 110%, rgb(255 61 242 / 0.16), transparent 66%),
+    radial-gradient(90% 22% at 50% 104%, rgb(255 170 80 / 0.12), transparent 70%),
+    radial-gradient(rgb(0 229 255 / 0.07) 1px, transparent 1.3px),
+    repeating-linear-gradient(90deg, transparent 0 118px, rgb(0 229 255 / 0.05) 118px 120px, transparent 120px 236px),
+    linear-gradient(rgb(0 229 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 229 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(rgb(255 61 242 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 61 242 / 0.035) 1px, transparent 1px);
+  background-size: auto, auto, auto, auto, 26px 34px, auto, 44px 44px, 44px 44px, 176px 176px, 176px 176px;
+}
+/* Cyber Neon 动效:探照灯光束斜扫夜空(慢速往返) */
+html[data-theme="cyber-neon"] #bgfx {
+  background-image: linear-gradient(112deg, transparent 0 43%, rgb(0 229 255 / 0.06) 49%, rgb(255 61 242 / 0.04) 53%, transparent 60%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  animation: fx-neon-search 26s ease-in-out infinite alternate;
+}
+@keyframes fx-neon-search {
+  from { background-position: 0% 0; }
+  to { background-position: 100% 0; }
+}
+/* Cyber Neon 动效:青/品/琥珀三团霓虹光相向缓慢游移、轻微呼吸 */
+html[data-theme="cyber-neon"] #bgfx::before {
+  inset: -22%;
+  background-image:
+    radial-gradient(26% 22% at 28% 32%, rgb(0 229 255 / 0.15), transparent 72%),
+    radial-gradient(24% 20% at 74% 66%, rgb(255 61 242 / 0.15), transparent 72%),
+    radial-gradient(20% 16% at 56% 88%, rgb(255 170 80 / 0.1), transparent 72%);
+  background-repeat: no-repeat;
+  animation: fx-neon-orbit 44s ease-in-out infinite alternate;
+}
+@keyframes fx-neon-orbit {
+  from { transform: translate3d(-3.5%, -2.5%, 0) scale(1); }
+  to { transform: translate3d(3.5%, 2.5%, 0) scale(1.1); }
+}
+/* Cyber Neon 动效:两层星点各自缓移(速度与方向错开,不再整片一致)+ 呼吸闪烁 */
+html[data-theme="cyber-neon"] #bgfx::after {
+  background-image:
+    radial-gradient(rgb(234 242 255 / 0.15) 1px, transparent 1.5px),
+    radial-gradient(rgb(0 229 255 / 0.1) 1px, transparent 1.8px);
+  background-size: 110px 110px, 220px 220px;
+  will-change: background-position;
+  animation: fx-neon-stars 60s linear infinite, fx-neon-twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes fx-neon-stars {
+  from { background-position: 0 0, 70px 30px; }
+  to { background-position: 660px 660px, 510px 250px; }
+}
+@keyframes fx-neon-twinkle {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+
+/* Grainy Blur：重颗粒 + 弥散光斑 */
+html[data-theme="grainy-blur"] {
+  --color-bg: #141019;
+  --color-surface: #1d1726;
+  --color-raised: #282033;
+  --color-fg: #f2ecf6;
+  --color-muted: #b3a6c4;
+  --color-subtle: #7f7392;
+  --color-accent: #c9a0ff;
+  --color-accent-foreground: #170f22;
+  --color-border: rgb(242 236 246 / 0.1);
+  --color-ring: #c9a0ff;
+  --color-danger: #e58a92;
+  --color-gold: #f0c987;
+  --shadow-border: 0 0 0 1px rgb(242 236 246 / 0.08);
+  --shadow-border-hover: 0 0 0 1px rgb(201 160 255 / 0.35);
+  --motion-fast: 320ms;
+  --motion-slow: 560ms;
+}
+html[data-theme="grainy-blur"] {
+  /* 静态底:锥形流光 + 斜向柔光束 + 重颗粒(光斑移到动效层) */
+  background-image:
+    conic-gradient(from 210deg at 68% 38%, rgb(201 160 255 / 0.06), transparent 28%, rgb(96 165 250 / 0.06) 55%, transparent 78%),
+    linear-gradient(160deg, transparent 0 55%, rgb(201 160 255 / 0.05) 70%, transparent 85%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+  background-size: auto, auto, 140px 140px;
+  background-blend-mode: normal, normal, overlay;
+}
+/* Grainy Blur 动效:柔光束缓扫全屏 */
+html[data-theme="grainy-blur"] #bgfx {
+  background-image: linear-gradient(150deg, transparent 0 44%, rgb(201 160 255 / 0.06) 52%, transparent 62%);
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  animation: fx-blur-beam 36s ease-in-out infinite alternate;
+}
+@keyframes fx-blur-beam {
+  from { background-position: 0% 0; }
+  to { background-position: 100% 0; }
+}
+/* Grainy Blur 动效:紫/橘/青绿光斑一组,慢速游移 + 涨缩 */
+html[data-theme="grainy-blur"] #bgfx::before {
+  inset: -20%;
+  background-image:
+    radial-gradient(34% 28% at 24% 16%, rgb(201 160 255 / 0.26), transparent 72%),
+    radial-gradient(32% 28% at 80% 22%, rgb(255 158 118 / 0.2), transparent 72%),
+    radial-gradient(24% 20% at 68% 52%, rgb(94 234 212 / 0.1), transparent 72%);
+  background-repeat: no-repeat;
+  animation: fx-blob-a 42s ease-in-out infinite alternate;
+}
+@keyframes fx-blob-a {
+  from { transform: translate3d(-4%, -3%, 0) scale(1) rotate(0deg); }
+  to { transform: translate3d(5%, 4%, 0) scale(1.14) rotate(6deg); }
+}
+/* Grainy Blur 动效:蓝/粉/金光斑另一组,反向更慢 */
+html[data-theme="grainy-blur"] #bgfx::after {
+  inset: -20%;
+  background-image:
+    radial-gradient(38% 32% at 56% 84%, rgb(96 165 250 / 0.18), transparent 72%),
+    radial-gradient(28% 24% at 26% 62%, rgb(244 114 182 / 0.14), transparent 72%),
+    radial-gradient(22% 18% at 88% 78%, rgb(240 201 135 / 0.12), transparent 72%);
+  background-repeat: no-repeat;
+  animation: fx-blob-b 58s ease-in-out infinite alternate-reverse;
+}
+@keyframes fx-blob-b {
+  from { transform: translate3d(4%, 3%, 0) scale(1.1) rotate(4deg); }
+  to { transform: translate3d(-5%, -4%, 0) scale(1) rotate(-4deg); }
+}
+
+/* Red Alert:苏式警报红 —— C&C 指挥室:战术网格 + 雷达扫掠 + 警报灯 + 数据刻度 */
+html[data-theme="red-alert"] {
+  --color-bg: #130604;
+  --color-surface: #1d0c08;
+  --color-raised: #2a120c;
+  --color-fg: #f5e6dc;
+  --color-muted: #c79a8a;
+  --color-subtle: #8a6355;
+  --color-accent: #ff2b1f;
+  --color-accent-foreground: #1a0503;
+  --color-border: rgb(255 43 31 / 0.26);
+  --color-ring: #ffb347;
+  --color-danger: #ff2b1f;
+  --color-gold: #ffb347;
+  --font-sans: "IBM Plex Mono", "PingFang SC", "Noto Sans SC", ui-monospace, monospace;
+  --font-display: "IBM Plex Mono", "PingFang SC", ui-monospace, monospace;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --shadow-border: 0 0 0 1px rgb(255 43 31 / 0.28);
+  --shadow-border-hover: 0 0 0 1px rgb(255 43 31 / 0.55), 0 0 16px rgb(255 43 31 / 0.22);
+  --motion-quick: 70ms;
+  --motion-fast: 120ms;
+  --motion-slow: 200ms;
+}
+html[data-theme="red-alert"] {
+  /* 静态底只留氛围光:顶部警报红光 + 底部装甲暗角(所有图形元素都在动效层里动) */
+  background-image:
+    radial-gradient(55% 36% at 50% -8%, rgb(255 43 31 / 0.16), transparent 60%),
+    radial-gradient(90% 55% at 50% 118%, rgb(0 0 0 / 0.62), transparent 65%);
+}
+/* Red Alert 动效:指挥地图缓慢东南平移(网格 + 基地轮廓同向),测距圈固定,CRT 明暗 */
+html[data-theme="red-alert"] #bgfx {
+  background-image:
+    repeating-linear-gradient(0deg, rgb(255 43 31 / 0.03) 0 1px, transparent 1px 4px),
+    linear-gradient(rgb(255 43 31 / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 43 31 / 0.1) 1px, transparent 1px),
+    linear-gradient(rgb(255 43 31 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 43 31 / 0.045) 1px, transparent 1px),
+    repeating-radial-gradient(circle at 76% 24%, rgb(255 43 31 / 0.05) 0 1px, transparent 1px 110px),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22460%22%20height%3D%22460%22%3E%3Cg%20stroke%3D%22%23ff2b1f%22%20stroke-opacity%3D%22.14%22%20fill%3D%22none%22%3E%3Crect%20x%3D%2248%22%20y%3D%2270%22%20width%3D%2242%22%20height%3D%2228%22%2F%3E%3Crect%20x%3D%22310%22%20y%3D%22240%22%20width%3D%2236%22%20height%3D%2236%22%2F%3E%3Cpath%20d%3D%22M200%20380h28v-16h16v-12%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.1%22%3E%3Crect%20x%3D%22400%22%20y%3D%2290%22%20width%3D%2218%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%22120%22%20y%3D%22300%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: auto, 230px 230px, 230px 230px, 46px 46px, 46px 46px, auto, 460px 460px;
+  will-change: background-position, opacity;
+  animation:
+    fx-ra-map 52s linear infinite,
+    fx-ra-crt 3.4s ease-in-out infinite alternate;
+}
+@keyframes fx-ra-map {
+  from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 0, 230px 230px, 230px 230px, 230px 230px, 230px 230px, 0 0, 460px 460px; }
+}
+@keyframes fx-ra-crt {
+  from { opacity: 0.72; }
+  to { opacity: 1; }
+}
+/* Red Alert 动效:雷达扫掠光束绕视野旋转(锥形高光 + 琥珀亮缘余辉) */
+html[data-theme="red-alert"] #bgfx::before {
+  inset: -40%;
+  background-image: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0 282deg,
+    rgb(255 43 31 / 0.02) 304deg,
+    rgb(255 43 31 / 0.08) 336deg,
+    rgb(255 43 31 / 0.16) 354deg,
+    rgb(255 179 71 / 0.24) 359.5deg,
+    transparent 360deg
+  );
+  background-repeat: no-repeat;
+  will-change: transform;
+  animation: fx-ra-sweep 7s linear infinite;
+}
+@keyframes fx-ra-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+/* 三路独立行军:标记打散在大瓦片上(不共线),各走不同航向与周期
+   琥珀选择框 = 东北包抄;红三角/锁定 = 西南西接敌;菱形侦察 = 北北东侧翼 */
+html[data-theme="red-alert"] #bgfx > .bgfx-ra {
+  display: block;
+  will-change: background-position;
+}
+html[data-theme="red-alert"] #bgfx > .ra-allied {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22720%22%20height%3D%22640%22%3E%3Cg%20stroke%3D%22%23ffb347%22%20stroke-opacity%3D%22.22%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M78%2064h-10v10M118%2064h10v10M78%20108h-10v-10M118%20108h10v-10%22%2F%3E%3Cpath%20d%3D%22M402%20286h-8v8M432%20286h8v8M402%20316h-8v-8M432%20316h8v-8%22%2F%3E%3Cpath%20d%3D%22M168%20470h-7v7M194%20470h7v7M168%20496h-7v-7M194%20496h7v-7%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.22%22%3E%3Crect%20x%3D%2272%22%20y%3D%2256%22%20width%3D%2232%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%22398%22%20y%3D%22278%22%20width%3D%2226%22%20height%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%22%23ff2b1f%22%20fill-opacity%3D%22.24%22%3E%3Crect%20x%3D%2286%22%20y%3D%2276%22%20width%3D%2216%22%20height%3D%2216%22%2F%3E%3Crect%20x%3D%22248%22%20y%3D%22188%22%20width%3D%2212%22%20height%3D%2212%22%2F%3E%3Crect%20x%3D%22410%22%20y%3D%22296%22%20width%3D%2214%22%20height%3D%2214%22%2F%3E%3Crect%20x%3D%22560%22%20y%3D%22422%22%20width%3D%2211%22%20height%3D%2211%22%2F%3E%3Crect%20x%3D%22176%22%20y%3D%22478%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%22320%22%20y%3D%22540%22%20width%3D%229%22%20height%3D%229%22%2F%3E%3C%2Fg%3E%3Crect%20x%3D%22640%22%20y%3D%22240%22%20width%3D%228%22%20height%3D%228%22%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.2%22%2F%3E%3C%2Fsvg%3E");
+  background-size: 720px 640px;
+  animation: fx-ra-allied 44s linear infinite;
+}
+html[data-theme="red-alert"] #bgfx > .ra-soviet {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22720%22%3E%3Cg%20stroke%3D%22%23ff2b1f%22%20stroke-opacity%3D%22.28%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M70%20120l11%2019h-22z%22%2F%3E%3Cpath%20d%3D%22M310%20268l10%2017h-20z%22%2F%3E%3Cpath%20d%3D%22M490%20510l9%2016h-18z%22%2F%3E%3Cpath%20d%3D%22M200%20600l8%2014h-16z%22%2F%3E%3Ccircle%20cx%3D%22430%22%20cy%3D%2290%22%20r%3D%2214%22%2F%3E%3Cpath%20d%3D%22M430%2070v10M430%20100v10M410%2090h10M440%2090h10%22%2F%3E%3C%2Fg%3E%3Crect%20x%3D%22140%22%20y%3D%22400%22%20width%3D%2212%22%20height%3D%2212%22%20fill%3D%22%23ff2b1f%22%20fill-opacity%3D%22.22%22%2F%3E%3Crect%20x%3D%22560%22%20y%3D%22340%22%20width%3D%229%22%20height%3D%229%22%20fill%3D%22%23ff2b1f%22%20fill-opacity%3D%22.16%22%2F%3E%3C%2Fsvg%3E");
+  background-size: 640px 720px;
+  animation: fx-ra-soviet 36s linear infinite;
+}
+html[data-theme="red-alert"] #bgfx > .ra-scout {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22520%22%20height%3D%22480%22%3E%3Cg%20stroke%3D%22%23ffb347%22%20stroke-opacity%3D%22.2%22%20fill%3D%22none%22%20stroke-width%3D%221.5%22%3E%3Cpath%20d%3D%22M48%20210l8-8%208%208-8%208z%22%2F%3E%3Cpath%20d%3D%22M390%2070l6-6%206%206-6%206z%22%2F%3E%3Cpath%20d%3D%22M300%20360l7-7%207%207-7%207z%22%2F%3E%3C%2Fg%3E%3Crect%20x%3D%22180%22%20y%3D%22300%22%20width%3D%227%22%20height%3D%227%22%20fill%3D%22%23ffb347%22%20fill-opacity%3D%22.16%22%2F%3E%3C%2Fsvg%3E");
+  background-size: 520px 480px;
+  animation: fx-ra-scout 71s linear infinite;
+}
+@keyframes fx-ra-allied {
+  from { background-position: 0 0; }
+  to { background-position: 720px -640px; }
+}
+@keyframes fx-ra-soviet {
+  from { background-position: 0 0; }
+  to { background-position: -1280px 720px; }
+}
+@keyframes fx-ra-scout {
+  from { background-position: 0 0; }
+  to { background-position: 520px -960px; }
+}
+/* 航路虚线交叉(东北 / 西南西 / 短支线) + 纵向遥测 + 角上警报光 */
+html[data-theme="red-alert"] #bgfx::after {
+  background-image:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%22480%22%3E%3Cg%20stroke%3D%22%23ffb347%22%20stroke-opacity%3D%22.13%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%227%2016%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M-40%20400L520-40%22%2F%3E%3Cpath%20d%3D%22M500%2080L-40%20280%22%2F%3E%3Cpath%20d%3D%22M80%20500L200%20200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='520'%3E%3Cg fill='%23ff2b1f' fill-opacity='.13'%3E%3Crect x='22' y='30' width='14' height='2'/%3E%3Crect x='22' y='96' width='9' height='2'/%3E%3Crect x='22' y='188' width='16' height='2'/%3E%3Crect x='22' y='274' width='7' height='2'/%3E%3Crect x='22' y='368' width='12' height='2'/%3E%3Crect x='22' y='452' width='10' height='2'/%3E%3C/g%3E%3Cg fill='%23ffb347' fill-opacity='.11'%3E%3Crect x='198' y='64' width='11' height='2'/%3E%3Crect x='198' y='170' width='15' height='2'/%3E%3Crect x='198' y='262' width='8' height='2'/%3E%3Crect x='198' y='340' width='13' height='2'/%3E%3Crect x='198' y='430' width='9' height='2'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='680'%3E%3Cg fill='%23ff2b1f' fill-opacity='.08'%3E%3Crect x='150' y='48' width='10' height='2'/%3E%3Crect x='150' y='176' width='14' height='2'/%3E%3Crect x='150' y='330' width='8' height='2'/%3E%3Crect x='150' y='474' width='12' height='2'/%3E%3Crect x='150' y='612' width='9' height='2'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(38% 30% at 12% 16%, rgb(255 43 31 / 0.1), transparent 70%),
+    radial-gradient(30% 24% at 88% 78%, rgb(255 179 71 / 0.08), transparent 70%);
+  background-size: 480px 480px, 240px 520px, 320px 680px, 100% 100%, 100% 100%;
+  will-change: background-position, opacity;
+  animation: fx-ra-field 56s linear infinite, fx-ra-alarm 2.8s ease-in-out infinite alternate;
+}
+@keyframes fx-ra-field {
+  from { background-position: 0 0, 0 0, 90px 210px, 0 0, 0 0; }
+  to { background-position: 480px -480px, 0 1560px, 90px -1150px, 0 0, 0 0; }
+}
+@keyframes fx-ra-alarm {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+/* 自定义：颜色变量由 applyTheme() 注入根节点，这里只负责背景图与纹理层 */
+html[data-theme="custom"] {
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--color-bg) 58%, transparent),
+      color-mix(in srgb, var(--color-bg) 84%, transparent)
+    ),
+    var(--custom-bg-image, none);
+  background-size: auto, cover;
+  background-position: center, center;
+}
+/* 自定义主题:关掉基础样式(Matrix)的字形雨与磷光扫描带,避免绿色扫描条串场 */
+html[data-theme="custom"] #bgfx::before,
+html[data-theme="custom"] #bgfx::after {
+  background-image: none;
+  animation: none;
+}
+/* 自定义动效:强调色双光斑缓慢游移(任何配色都成立的安全动效) */
+html[data-theme="custom"] #bgfx::before {
+  inset: -20%;
+  background-image:
+    radial-gradient(30% 24% at 22% 14%, color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 70%),
+    radial-gradient(26% 22% at 82% 88%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 70%);
+  background-repeat: no-repeat;
+  animation: fx-custom-orbit 48s ease-in-out infinite alternate;
+}
+@keyframes fx-custom-orbit {
+  from { transform: translate3d(-3%, -2%, 0) scale(1); }
+  to { transform: translate3d(3%, 2%, 0) scale(1.08); }
+}
+html[data-theme="custom"][data-custom-texture="grain"] {
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"),
+    linear-gradient(
+      color-mix(in srgb, var(--color-bg) 58%, transparent),
+      color-mix(in srgb, var(--color-bg) 84%, transparent)
+    ),
+    var(--custom-bg-image, none);
+  background-size: 180px 180px, auto, cover;
+  background-position: center, center, center;
+}
+html[data-theme="custom"][data-custom-texture="grid"] {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-fg) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-fg) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      color-mix(in srgb, var(--color-bg) 58%, transparent),
+      color-mix(in srgb, var(--color-bg) 84%, transparent)
+    ),
+    var(--custom-bg-image, none);
+  background-size: 40px 40px, 40px 40px, auto, cover;
+  background-position: center, center, center, center;
+}
+html[data-theme="custom"][data-custom-texture="glow"] {
+  background-image:
+    radial-gradient(52% 38% at 14% -6%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 62%),
+    radial-gradient(46% 34% at 88% 108%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 62%),
+    linear-gradient(
+      color-mix(in srgb, var(--color-bg) 58%, transparent),
+      color-mix(in srgb, var(--color-bg) 84%, transparent)
+    ),
+    var(--custom-bg-image, none);
+  background-size: auto, auto, auto, cover;
+  background-position: center, center, center, center;
+}
+
+/* Music Map:主题色星图底,不用单独一套色。 */
+.music-map-field {
+  background:
+    radial-gradient(ellipse at 50% 46%, color-mix(in srgb, var(--color-accent) 11%, transparent), transparent 68%),
+    var(--color-raised);
+}
+.music-map-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+.music-map-label-core {
+  font-size: 12px;
+  font-weight: 600;
+}

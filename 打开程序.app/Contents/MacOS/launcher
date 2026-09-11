@@ -1,0 +1,8 @@
+#!/bin/bash
+# LaunchServices 直接执行本文件，不经过「带 ~ 的 iCloud 路径 ; exit」
+osascript <<'EOF'
+tell application "Terminal"
+  activate
+  do script "exec /Users/ye/icloud/Playground/NewMusic/V1/打开程序.command"
+end tell
+EOF

@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VprGrid.SYS · 安装与使用</title>
+    <style>
+      :root {
+        --bg: #020703;
+        --surface: #051309;
+        --raised: #0a2112;
+        --fg: #c8ffd4;
+        --muted: #58c273;
+        --subtle: #33804a;
+        --accent: #00ff66;
+        --ink: #01130a;
+        --line: rgb(0 255 102 / 0.2);
+        --font: "SF Mono", "IBM Plex Mono", "Menlo", "PingFang SC", "Noto Sans SC", ui-monospace, monospace;
+        --display: "SF Mono", "IBM Plex Mono", "PingFang SC", ui-monospace, monospace;
+        --r: 10px;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); }
+      body {
+        min-height: 100dvh;
+        line-height: 1.65;
+        background-image:
+          repeating-linear-gradient(90deg, rgb(0 255 102 / 0.03) 0 2px, transparent 2px 26px),
+          repeating-linear-gradient(0deg, rgb(0 255 102 / 0.045) 0 1px, transparent 1px 3px),
+          radial-gradient(60% 40% at 50% -8%, rgb(0 255 102 / 0.1), transparent 62%);
+        background-attachment: fixed;
+      }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      button { font: inherit; cursor: pointer; }
+      .wrap { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0 80px; }
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 36px;
+      }
+      .brand { letter-spacing: 0.18em; font-size: 11px; color: var(--subtle); text-transform: uppercase; }
+      h1 {
+        margin: 8px 0 0;
+        font-family: var(--display);
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        color: var(--fg);
+      }
+      .lede { margin-top: 12px; max-width: 38em; color: var(--muted); font-size: 14px; }
+      .lang {
+        appearance: none;
+        border: 0;
+        height: 32px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: var(--raised);
+        color: var(--fg);
+        box-shadow: 0 0 0 1px var(--line);
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0 40px;
+      }
+      nav a {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 6px 10px;
+        border-radius: 999px;
+        box-shadow: 0 0 0 1px var(--line);
+        text-decoration: none;
+      }
+      nav a:hover { color: var(--fg); }
+      section { margin: 48px 0; }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--subtle);
+        font-weight: 500;
+      }
+      h3 { margin: 0 0 8px; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+      p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+      .grid { display: grid; gap: 14px; }
+      @media (min-width: 780px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+      .card {
+        background: color-mix(in srgb, var(--surface) 88%, transparent);
+        box-shadow: 0 0 0 1px var(--line), inset 0 1px 0 rgb(255 255 255 / 0.04);
+        border-radius: calc(var(--r) + 4px);
+        padding: 18px 18px 16px;
+      }
+      .step {
+        display: grid;
+        gap: 16px;
+        align-items: start;
+        margin: 18px 0 28px;
+      }
+      @media (min-width: 820px) {
+        .step { grid-template-columns: 1fr 1.15fr; }
+      }
+      .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        margin-right: 8px;
+        border-radius: 4px;
+        background: var(--accent);
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .mock {
+        background: #07140c;
+        border-radius: 12px;
+        box-shadow: 0 0 0 1px var(--line), 0 18px 40px rgb(0 0 0 / 0.35);
+        overflow: hidden;
+      }
+      .chrome {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        background: #0b1c12;
+        box-shadow: inset 0 -1px 0 var(--line);
+      }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #2a6a3c; }
+      .dot:first-child { background: #3d8f54; }
+      .addr {
+        flex: 1;
+        height: 22px;
+        border-radius: 999px;
+        background: #051309;
+        color: var(--subtle);
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+      }
+      .pane { padding: 16px; min-height: 168px; }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: var(--raised);
+        box-shadow: 0 0 0 1px var(--line);
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      .toggle {
+        width: 34px;
+        height: 18px;
+        border-radius: 999px;
+        background: var(--accent);
+        position: relative;
+      }
+      .toggle::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--ink);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        height: 28px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--ink);
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .btn.ghost {
+        background: var(--raised);
+        color: var(--fg);
+        box-shadow: 0 0 0 1px var(--line);
+      }
+      .folder {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 0 0 1px var(--accent);
+        background: color-mix(in srgb, var(--accent) 8%, var(--raised));
+        font-size: 12px;
+      }
+      .sleeves {
+        display: flex;
+        align-items: center;
+        padding: 18px 14px 16px;
+        overflow: hidden;
+      }
+      .sleeve {
+        flex: 0 0 72px;
+        height: 72px;
+        border-radius: 18px;
+        margin-left: -28px;
+        box-shadow: 0 0 0 1px rgb(0 255 102 / 0.28), 0 8px 18px rgb(0 0 0 / 0.4);
+      }
+      .sleeve:first-child { margin-left: 0; }
+      .s1 { background: linear-gradient(145deg, #123, #0a2112 60%, #00ff66); }
+      .s2 { background: linear-gradient(160deg, #1a3320, #062); }
+      .s3 { background: linear-gradient(135deg, #204028, #0b1); }
+      .s4 { background: linear-gradient(150deg, #0d2, #031a0c); }
+      .s5 { background: linear-gradient(170deg, #143, #0a2112); }
+      .k {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px var(--line);
+        background: var(--raised);
+        color: var(--fg);
+        font-size: 11px;
+      }
+      ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+      li { margin: 6px 0; }
+      .note {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--subtle);
+      }
+      .term {
+        margin: 12px 0 0;
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #010805;
+        box-shadow: 0 0 0 1px var(--line);
+        color: var(--accent);
+        font-size: 13px;
+        line-height: 1.75;
+        overflow-x: auto;
+        white-space: pre;
+      }
+      .term .cmt { color: var(--subtle); }
+      footer {
+        margin-top: 56px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+        color: var(--subtle);
+        font-size: 12px;
+      }
+      [data-en] { display: none; }
+      html[lang="en"] [data-zh] { display: none; }
+      html[lang="en"] [data-en] { display: revert; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <p class="brand">VprGrid.SYS · Demo 1.5.32</p>
+          <h1 data-zh>安装与使用教程</h1>
+          <h1 data-en>Install &amp; use</h1>
+          <p class="lede" data-zh>
+            这份压缩包里有两样东西：<span class="k">extension</span> 浏览器插件，和 <span class="k">app</span> 完整应用源码。只装插件、不启动 app，打开「完整应用」就是灰屏。不需要账号，口味和参考池只存在本机。
+          </p>
+          <p class="lede" data-en>
+            This pack has two parts: the <span class="k">extension</span>, and the full app in <span class="k">app</span>. The extension alone cannot open Full app — that is the grey screen. No accounts; taste stays on this device.
+          </p>
+        </div>
+        <button class="lang" id="lang" type="button">EN</button>
+      </header>
+
+      <nav>
+        <a href="#install" data-zh>安装插件</a>
+        <a href="#install" data-en>Install</a>
+        <a href="#start" data-zh>开机启动</a>
+        <a href="#start" data-en>Start the app</a>
+        <a href="#app" data-zh>连接应用</a>
+        <a href="#app" data-en>Connect app</a>
+        <a href="#use" data-zh>怎么用</a>
+        <a href="#use" data-en>How to use</a>
+        <a href="#import" data-zh>导入歌单</a>
+        <a href="#import" data-en>Import</a>
+      </nav>
+
+      <section id="install">
+        <h2 data-zh>01 · 安装插件</h2>
+        <h2 data-en>01 · Extension</h2>
+        <p data-zh>Chrome、Edge、Arc 等 Chromium 浏览器都可以。解压本包后，用里面的 <span class="k">extension</span> 文件夹。</p>
+        <p data-en>Works in Chrome, Edge, Arc and other Chromium browsers. After unzipping, load the <span class="k">extension</span> folder.</p>
+
+        <div class="step">
+          <div>
+            <h3><span class="num">1</span><span data-zh>打开扩展程序页</span><span data-en>Open Extensions</span></h3>
+            <p data-zh>在地址栏输入 chrome://extensions 回车。Edge 用 edge://extensions。</p>
+            <p data-en>Type chrome://extensions in the address bar. Edge uses edge://extensions.</p>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <div class="chrome">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <div class="addr">chrome://extensions</div>
+            </div>
+            <div class="pane">
+              <div class="row"><span data-zh>扩展程序</span><span data-en>Extensions</span><span class="btn ghost" data-zh>开发者模式</span><span class="btn ghost" data-en>Developer mode</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h3><span class="num">2</span><span data-zh>打开开发者模式</span><span data-en>Turn on Developer mode</span></h3>
+            <p data-zh>右上角打开「开发者模式」。这是本机安装未上架插件的正常步骤，不是越权。</p>
+            <p data-en>Enable Developer mode at the top right. This is the normal way to load an unpacked extension.</p>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <div class="chrome">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <div class="addr">chrome://extensions</div>
+            </div>
+            <div class="pane">
+              <div class="row">
+                <span data-zh>开发者模式</span><span data-en>Developer mode</span>
+                <span class="toggle" aria-hidden="true"></span>
+              </div>
+              <div class="row">
+                <span data-zh>加载已解压的扩展程序</span><span data-en>Load unpacked</span>
+                <span class="btn" data-zh>选择文件夹</span><span class="btn" data-en>Choose folder</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h3><span class="num">3</span><span data-zh>选中 extension 文件夹</span><span data-en>Select the extension folder</span></h3>
+            <p data-zh>点「加载已解压的扩展程序」，选本包里的 extension 文件夹（不要选上一层，也不要只选 zip）。</p>
+            <p data-en>Click Load unpacked and choose the extension folder inside this pack — not the parent folder, not the zip.</p>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <div class="chrome">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <div class="addr" data-zh>访达 · 选择文件夹</div>
+              <div class="addr" data-en>Finder · Choose a folder</div>
+            </div>
+            <div class="pane">
+              <div class="folder">VprGrid.SYS-demo / extension</div>
+              <p class="note" data-zh>选中后应看到「VprGrid」出现在扩展列表。</p>
+              <p class="note" data-en>You should then see “VprGrid.SYS Weekly Album Radar” in the list.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="start">
+        <h2 data-zh>02 · 开机后启动完整应用</h2>
+        <h2 data-en>02 · Start the full app after a reboot</h2>
+        <p data-zh>完整应用在压缩包的 <span class="k">app</span> 文件夹里（带 package.json）。关掉终端或重启电脑都不会自动带上。先装 Node.js LTS（nodejs.org），再任选下面一种方式。</p>
+        <p data-en>The full app lives in the pack’s <span class="k">app</span> folder (it has package.json). Closing the window or rebooting stops it. Install Node.js LTS from nodejs.org, then pick one method.</p>
+        <p data-zh>Mac 可双击解压目录里的 <span class="k">打开完整应用.command</span>（或 <span class="k">Start-App.command</span>）。Windows 双击 <span class="k">Start-App.bat</span>。第一次会自动 <span class="k">npm install</span>，要几分钟。</p>
+        <p data-en>On a Mac, double-click <span class="k">打开完整应用.command</span> or <span class="k">Start-App.command</span>. On Windows, double-click <span class="k">Start-App.bat</span>. The first run runs <span class="k">npm install</span> and can take a few minutes.</p>
+        <p data-zh>或打开「终端」，先进入<strong>解压出来的这个 Demo 文件夹</strong>，再进入里面的 app：</p>
+        <p data-en>Or open Terminal, go into the unzipped Demo folder, then into app:</p>
+        <pre class="term" data-zh>cd 解压后的文件夹/app
+npm install
+npm run dev</pre>
+        <pre class="term" data-en>cd path/to/unzipped-folder/app
+npm install
+npm run dev</pre>
+        <div class="card" style="margin-top:16px">
+          <ul>
+            <li data-zh><span class="k">npm install</span> 只在第一次做。之后每次开机只需 <span class="k">npm run dev</span>。窗口不要关。</li>
+            <li data-en><span class="k">npm install</span> is first run only. After that, just <span class="k">npm run dev</span>. Leave the window open.</li>
+            <li data-zh>终端出现 <span class="k">Local</span> 后，浏览器打开 <span class="k">http://127.0.0.1:8080</span> 确认不是灰屏。</li>
+            <li data-en>When the terminal prints <span class="k">Local</span>, open <span class="k">http://127.0.0.1:8080</span> and confirm the radar is up.</li>
+            <li data-zh>插件默认找这个地址。应用开着时，新标签页点「完整应用」即可。</li>
+            <li data-en>The extension looks for that address. With the app running, Full app on a new tab opens it.</li>
+            <li data-zh>旧包 1.5.10 及更早<strong>没有</strong> app 文件夹，只装插件一定会灰屏。请改用本包。</li>
+            <li data-en>Packs 1.5.10 and older have no app folder. The extension alone is the grey screen. Use this pack.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="app">
+        <h2 data-zh>03 · 连接完整应用</h2>
+        <h2 data-en>03 · Connect the full app</h2>
+        <p data-zh>打开新标签页时，插件会自动探测本机正在跑的完整应用。应用开着，点「完整应用」就会整页进入，一般不用再手填地址。</p>
+        <p data-en>A new tab probes the running full app. Keep the app running, then Full app opens it — you usually don’t paste a URL.</p>
+
+        <div class="grid two">
+          <div class="card">
+            <h3 data-zh>用这份 Demo 包</h3>
+            <h3 data-en>Using this Demo pack</h3>
+            <ul>
+              <li data-zh>先按上一节把 <span class="k">app</span> 跑起来，浏览器能打开 http://127.0.0.1:8080。</li>
+              <li data-en>Start <span class="k">app</span> as above until http://127.0.0.1:8080 loads.</li>
+              <li data-zh>插件一般会自动找到它。找不到就到设置里填这个地址，保存。</li>
+              <li data-en>The extension usually finds it. If not, paste that URL into Options and save.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 data-zh>你自己有开发项目</h3>
+            <h3 data-en>If you have the project folder</h3>
+            <ul>
+              <li data-zh>在项目根目录打 <span class="k">npm run dev</span>，窗口不要关。</li>
+              <li data-en>Run <span class="k">npm run dev</span> at the project root and leave it open.</li>
+              <li data-zh>浏览器打开后，把地址栏复制到插件设置（默认就是上面这个地址）。</li>
+              <li data-en>Copy the address bar into the extension settings if it isn’t already the default.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h3><span class="num">4</span><span data-zh>填应用地址</span><span data-en>Paste the app URL</span></h3>
+            <p data-zh>扩展列表点「详细信息 → 扩展程序选项」，或新标签页墙底栏的「设置」。</p>
+            <p data-en>Use Details → Extension options, or Settings on the new-tab wall footer.</p>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <div class="chrome">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <div class="addr" data-zh>VprGrid.SYS · 插件设置</div>
+              <div class="addr" data-en>VprGrid.SYS · Options</div>
+            </div>
+            <div class="pane">
+              <div class="row"><span data-zh>应用地址</span><span data-en>App URL</span><span class="btn ghost">https://…</span></div>
+              <div class="row"><span data-zh>同步码 · 可选</span><span data-en>Sync code · optional</span><span class="btn" data-zh>保存</span><span class="btn" data-en>Save</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="use">
+        <h2 data-zh>04 · 打开新标签页</h2>
+        <h2 data-en>04 · Open a new tab</h2>
+        <p data-zh>装好后，每个新标签页就是雷达墙：默认按月看前列专辑，可切回按周。点「完整应用」进入完整界面。</p>
+        <p data-en>Each new tab becomes the radar wall. It defaults to the month’s leading albums; you can switch back to week. Top right opens the full app.</p>
+
+        <div class="mock" aria-hidden="true">
+          <div class="chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <div class="addr">chrome://newtab · VprGrid.SYS</div>
+          </div>
+          <div class="pane">
+            <p style="text-align:center;letter-spacing:0.18em;font-size:11px;color:var(--subtle);margin:0 0 6px">VPRGRID.SYS</p>
+            <div class="sleeves">
+              <div class="sleeve s1"></div>
+              <div class="sleeve s2"></div>
+              <div class="sleeve s3"></div>
+              <div class="sleeve s4"></div>
+              <div class="sleeve s5"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid two" style="margin-top:16px">
+          <div class="card">
+            <h3 data-zh>墙底栏</h3>
+            <h3 data-en>Wall footer</h3>
+            <ul>
+              <li data-zh>月 / 周：默认月份，可切回自然周。</li>
+              <li data-en>Month / week: month is the default; week is one click away.</li>
+              <li data-zh>本月、刷新、设置、语言切换都在大框底部。</li>
+              <li data-en>This month, refresh, settings and language sit in the box footer.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 data-zh>完整应用</h3>
+            <h3 data-en>Full app</h3>
+            <ul>
+              <li data-zh>点「完整应用」：口味 A–Z、参考池、权重、回扫。</li>
+              <li data-en>Switch to the full app for taste A–Z, the reference pool, weights and rescan.</li>
+              <li data-zh>口味与参考只存在本机，换设备不会自动带走。</li>
+              <li data-en>Taste and references stay on this device unless you copy a sync code.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="import">
+        <h2 data-zh>05 · 导入你自己的参考</h2>
+        <h2 data-en>05 · Import your reference</h2>
+        <p data-zh>装上插件后，打开 RYM 收藏页或 AOTY 用户页，右下角会出现「导入到雷达」。完整应用里也可以贴网易云歌单、RSS、艺人名。</p>
+        <p data-en>With the extension on, RYM collection pages and AOTY user pages show Import to radar. In the full app you can also paste a Netease playlist, RSS feed, or an artist name.</p>
+        <div class="grid two">
+          <div class="card">
+            <h3>RateYourMusic / AOTY</h3>
+            <p data-zh>先在那个网站登录，再点页面上的导入。列表会翻完所有分页，写进参考订阅。</p>
+            <p data-en>Sign in on that site first, then hit import. It walks every page into a reference source.</p>
+          </div>
+          <div class="card">
+            <h3 data-zh>同步码</h3>
+            <h3 data-en>Sync code</h3>
+            <p data-zh>应用开着时，插件会自动跟上口味和主题。离线备份：在参考订阅里复制同步码，贴进插件设置。</p>
+            <p data-en>While the app is running, the extension pulls taste and theme by itself. For a backup, copy the sync code from Reference and paste it into Options.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 data-zh>06 · 常见情况</h2>
+        <h2 data-en>06 · If something’s off</h2>
+        <div class="grid two">
+          <div class="card">
+            <h3 data-zh>墙是空的或连不上</h3>
+            <h3 data-en>Empty wall / can’t connect</h3>
+            <p data-zh>只装了插件、没启动 app，就会灰屏。确认解压目录里有 <span class="k">app</span> 文件夹，按「开机后启动」跑起来，浏览器能打开 http://127.0.0.1:8080 后再点「完整应用」。若解压出来没有 app，说明是 1.5.10 那种旧包，请换 1.5.14 及更新的包。</p>
+            <p data-en>The grey screen is the extension without the app. Confirm the unzipped folder has <span class="k">app</span>, start it, open http://127.0.0.1:8080, then Full app. No app folder means an old 1.5.10 pack — use 1.5.14 or newer.</p>
+          </div>
+          <div class="card">
+            <h3 data-zh>更新了文件但没变化</h3>
+            <h3 data-en>Updated files, nothing changed</h3>
+            <p data-zh>扩展页对 VprGrid.SYS 点「重新加载」，再开一个新标签页。不要用旧的解压文件夹。</p>
+            <p data-en>Click Reload on VprGrid.SYS, then open a fresh tab. Don’t keep an old unpacked copy.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span data-zh>VprGrid.SYS Demo · 1.5.32 · 含插件 + 完整应用。启动 app 需要 Node.js。</span>
+        <span data-en>VprGrid.SYS Demo · 1.5.32 · Extension + full app. Starting the app needs Node.js.</span>
+      </footer>
+    </div>
+    <script>
+      const root = document.documentElement;
+      const btn = document.getElementById("lang");
+      const apply = (lang) => {
+        root.lang = lang === "en" ? "en" : "zh-CN";
+        btn.textContent = lang === "en" ? "中" : "EN";
+      };
+      apply("zh");
+      btn.addEventListener("click", () => apply(root.lang === "en" ? "zh" : "en"));
+    </script>
+  </body>
+</html>

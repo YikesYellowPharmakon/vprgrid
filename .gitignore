@@ -1,0 +1,37 @@
+# 依赖与安装锁旁路
+node_modules/
+.node_modules.lock
+
+# 构建 / 预览 / 平台缓存
+dist/
+.output/
+.nitro/
+.vinxi/
+.tanstack/
+.vercel/
+.vite/
+*.local
+
+# 环境与密钥(平台注入,不要入库)
+.env
+.env.*
+!.env.example
+
+# 可再生成的打包与 QA 产物
+release/
+screenshots/
+artifacts/
+*.log
+.grok/preview.log
+.grok/status
+
+# 系统与 iCloud 噪音
+.DS_Store
+._*
+.AppleDouble
+*.icloud
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
