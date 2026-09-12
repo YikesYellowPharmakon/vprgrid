@@ -7,7 +7,7 @@ Taste-first: subscribe to references (playlists, RYM, AOTY, RSS, artists), pick 
 [Live demo](https://vprgrid.vercel.app) (empty reference pool; changes stay in your browser) · [User guide](docs/USER.en.md) · [Developer notes](docs/DEVELOPER.en.md)
 
 <p align="center">
-  <img src="public/og.jpg" alt="VprGrid.SYS — weekly album radar" width="840">
+  <img src="public/og.jpg" alt="VprGrid.SYS" width="840">
 </p>
 
 ---

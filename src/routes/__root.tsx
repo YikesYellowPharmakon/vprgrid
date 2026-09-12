@@ -13,7 +13,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { syncMatrixRain } from "@/lib/matrix-rain";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "VprGrid.SYS · 每周新专雷达";
+const APP_NAME = "VprGrid.SYS";
 
 export const Route = createRootRoute({
   head: () => ({
