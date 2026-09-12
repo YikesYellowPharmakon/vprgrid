@@ -4,7 +4,7 @@
 
 Taste-first: subscribe to references (playlists, RYM, AOTY, RSS, artists), pick genres, and the app screens public catalogs (ListenBrainz / MusicBrainz / Bandcamp / AOTY) into a week view. No account. Data stays on your machine.
 
-[Live demo](https://vprgrid.vercel.app) (empty reference pool; changes stay in your browser) · [User guide](docs/USER.md) (Chinese)
+[Live demo](https://vprgrid.vercel.app) (empty reference pool; changes stay in your browser) · [User guide](docs/USER.en.md) · [Developer notes](docs/DEVELOPER.en.md)
 
 <p align="center">
   <img src="public/og.jpg" alt="VprGrid.SYS — weekly album radar" width="840">
@@ -102,7 +102,7 @@ Open http://127.0.0.1:8080 and leave that process running. On a Mac you can also
 
 Extension: `chrome://extensions` → Developer mode → Load unpacked → select `extension/`.
 
-More detail: [user guide](docs/USER.md) (Chinese) · [developer notes](docs/DEVELOPER.md) (Chinese).
+More detail: [user guide](docs/USER.en.md) ([中文](docs/USER.md)) · [developer notes](docs/DEVELOPER.en.md) ([中文](docs/DEVELOPER.md)).
 
 ---
 

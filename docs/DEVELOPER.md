@@ -1,5 +1,7 @@
 # VprGrid.SYS · 每周新专雷达 — 开发者文档
 
+[English](DEVELOPER.en.md) · [中文](DEVELOPER.md)
+
 面向实验音乐听众的「2026 每周新发行」筛选器:以**多源参考设置**为品味基准(内置默认参考 364 张专辑 100% 硬性召回;可叠加网易云歌单 / RYM / AOTY / RSS / 艺人追踪等任意多个源),叠加 ListenBrainz 公开目录的自动抓取,按自然周分组展示。配套一个 Chromium 浏览器插件(`extension/`):新标签页 + 工具栏弹窗的缩略图墙,以及 RYM/AOTY 列表页一键导入。
 
 ## 技术栈
