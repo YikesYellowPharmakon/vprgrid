@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="matrix">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Montserrat:wght@700&family=Noto+Sans+SC:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="../extension/shared/radar.css" />
+    <link rel="stylesheet" href="../extension/shared/themes.css" />
+    <style>
+      html, body { width: 1280px; height: 640px; overflow: hidden; }
+      body { font-family: "IBM Plex Mono", "PingFang SC", "Noto Sans SC", "Hiragino Sans GB", monospace; }
+      body.newtab { --wall-w: 1040px; --wall-h: 118px; --cover-w: 118px; --wall-y: 0px; }
+      body.newtab .wrap { padding: 36px 36px 0; }
+      body.newtab .ntbrand { font-size: 44px; }
+      .gsearch { margin-top: 16px; max-width: 640px; }
+      .gsearch input { padding: 11px 20px 11px 42px; }
+      body.newtab .wallbox { margin-top: 18px; }
+      body.newtab .wallscroll { padding: 16px 18px 14px; }
+      .pills { top: 16px; right: 20px; }
+      .promo-hover { z-index: 12 !important; transform: translateY(-8px) !important; }
+      .promo-hover .meta { opacity: 1 !important; }
+      .sizers { display: none; }
+    </style>
+  </head>
+  <body class="newtab">
+    <div id="bgfx" aria-hidden="true">
+      <div class="bgfx-ra ra-allied"></div>
+      <div class="bgfx-ra ra-soviet"></div>
+      <div class="bgfx-ra ra-scout"></div>
+    </div>
+    <div class="pills">
+      <button class="modebtn" type="button">▤ 完整应用</button>
+    </div>
+    <div class="wrap">
+      <p class="ntbrand"><span class="ntbrand-name">VprGrid</span></p>
+      <form class="gsearch">
+        <span class="gicon">⌕</span>
+        <input type="search" placeholder="搜索，或输入网址" readonly />
+      </form>
+      <p class="searchvia">搜索由 Google 提供</p>
+      <section class="wallbox">
+        <div class="wallhead">
+          <div class="weekbar">
+            <button type="button">‹</button>
+            <span class="label">2026-W37</span>
+            <button type="button">›</button>
+            <span class="grainseg">
+              <button type="button">月</button>
+              <button class="on" type="button">周</button>
+            </span>
+            <span class="status">参考 12 · 雷达 18 · 已同步口味</span>
+          </div>
+        </div>
+        <div class="widgets">
+          <div class="widget wstats">
+            <span class="statshead">本期</span>
+            <p class="statline"><span class="statlabel">参考</span><span class="statnum">12 张</span></p>
+            <p class="statline"><span class="statlabel">扫描池</span><span class="statnum">186</span></p>
+            <p class="statline"><span class="statlabel">本期过筛</span><span class="statnum">18</span></p>
+            <p class="statline"><span class="statlabel">流水线</span><span class="statnum">7</span></p>
+          </div>
+          <div class="widget wnews">
+            <span class="newshead">音乐快讯</span>
+            <ul class="newslist">
+              <li>The Smile announce a surprise live document</li>
+              <li>A new Eliane Radigue realization surfaces</li>
+              <li>Bandcamp Friday highlights from the week</li>
+            </ul>
+          </div>
+          <div class="widget wgenre">
+            <div class="genretop">
+              <span class="genrehead">风格介绍</span>
+              <span class="genrenav"><button type="button">‹</button><button type="button">›</button></span>
+            </div>
+            <p class="genrename">Lowercase</p>
+            <p class="genrewhere">Berlin / Tokyo · 1990s–</p>
+            <p class="genredesc">把环境压到几乎听不见，靠房间底噪和极轻的事件撑住时间。</p>
+            <p class="genrekey">代表 Steve Roden — Forms of Paper</p>
+          </div>
+        </div>
+        <div class="wallscroll">
+          <div class="stack" id="grid"></div>
+        </div>
+        <div class="wallfoot">
+          <span>参考亲选置顶 · 雷达过筛补充</span>
+          <span class="wallbtns">
+            <button class="wallbtn" type="button">本周</button>
+            <button class="wallbtn" type="button">刷新</button>
+            <a class="wallbtn" href="#">完整应用 ↗</a>
+            <a class="wallbtn" href="#">设置</a>
+            <button class="wallbtn" type="button">EN</button>
+          </span>
+        </div>
+      </section>
+    </div>
+    <script type="application/json" id="covers">[]</script>
+    <script>
+      const files = JSON.parse(document.getElementById("covers").textContent);
+      const grid = document.getElementById("grid");
+      files.forEach((item, i) => {
+        const src = typeof item === "string" ? item : item.src;
+        const artist = item.artist || "";
+        const title = item.title || "";
+        const gold = Boolean(item.gold) || i < 3;
+        const a = document.createElement("a");
+        a.className = "card" + (i === 5 ? " promo-hover" : "");
+        a.href = "#";
+        a.innerHTML =
+          '<div class="cover">' +
+          (gold ? '<span class="pick">选</span>' : "") +
+          '<img class="on" alt="" src="' + src + '" />' +
+          '<div class="meta"><p class="artist">' + artist + '</p><p class="title">' + title + "</p></div>" +
+          "</div>";
+        grid.appendChild(a);
+      });
+    </script>
+  </body>
+</html>

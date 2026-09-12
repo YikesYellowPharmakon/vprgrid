@@ -23,6 +23,8 @@ dist/
 # 可再生成的打包与 QA 产物
 release/
 screenshots/
+scripts/.promo-covers/
+scripts/.promo-newtab.out.html
 artifacts/
 *.log
 .grok/preview.log
