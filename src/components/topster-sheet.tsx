@@ -147,7 +147,9 @@ export function TopsterSheet({
       ctx.fillStyle = background;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       // 代理成同源图片再画,否则画布被跨域污染,toBlob 会直接抛错
-      const imgs = await loadImages(used.map((a) => proxiedCover(a.coverURL, { force: true }) ?? a.coverURL));
+      const imgs = await loadImages(
+        used.map((a) => proxiedCover(a.coverURL, { force: true, artist: a.artist, title: a.title }) ?? a.coverURL),
+      );
       used.forEach((album, i) => {
         const x = pad + (i % cols) * (cell + pad);
         const y = pad + Math.floor(i / cols) * (cell + pad);
@@ -236,7 +238,7 @@ export function TopsterSheet({
                     <div key={i} className="aspect-square overflow-hidden bg-fg/5">
                       {a ? (
                         <img
-                          src={proxiedCover(a.coverURL) ?? a.coverURL}
+                          src={proxiedCover(a.coverURL, { artist: a.artist, title: a.title }) ?? a.coverURL}
                           alt=""
                           loading="lazy"
                           decoding="async"

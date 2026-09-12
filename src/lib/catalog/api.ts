@@ -46,7 +46,7 @@ const albumMemoryList: AlbumCache[] = [];
 
 function rememberAlbums(entry: AlbumCache) {
   // 目录一落缓存就后台预热封面:浏览器随后拿到的多半已在内存里(见 cover-cache)
-  warmCovers(entry.albums.map((a) => a.coverUrl));
+  warmCovers(entry.albums.map((a) => ({ url: a.coverUrl, artist: a.artist, title: a.title })));
   albumMemory = entry;
   const i = albumMemoryList.findIndex((x) => x.key === entry.key);
   if (i >= 0) albumMemoryList.splice(i, 1);

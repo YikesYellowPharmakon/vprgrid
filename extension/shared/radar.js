@@ -310,20 +310,29 @@ function el(tag, cls, text) {
 
 /** 像网址就直达,否则走表单里的 Google 搜索(说明性使用,不仿标志)。 */
 /** 墙上只要约 128–250px。同步码里的网易云图常是原图,Cover Art Archive 还会 302 到 archive.org。 */
-function wallThumb(url) {
-  if (!url) return null;
-  let u = String(url).trim();
-  if (!u) return null;
+function wallThumb(url, meta) {
+  if (!url && !(meta?.artist && meta?.title && meta?.base)) return null;
+  let u = url ? String(url).trim() : "";
   if (u.startsWith("//")) u = `https:${u}`;
   else if (u.startsWith("http://")) u = `https://${u.slice(7)}`;
-  if (!/^https:\/\//i.test(u)) return null;
+  if (u && !/^https:\/\//i.test(u)) u = "";
   if (/music\.126\.net/i.test(u)) {
-    return `${u.split("#")[0].split("?")[0]}?param=200y200`;
+    u = `${u.split("#")[0].split("?")[0]}?param=200y200`;
   }
   if (/coverartarchive\.org/i.test(u)) {
-    if (/\/front-\d+\b/.test(u)) return u.replace(/\/front-\d+\b/, "/front-250");
-    return u.replace(/\/front\/?(?=[?#]|$)/, "/front-250");
+    if (/\/front-\d+\b/.test(u)) u = u.replace(/\/front-\d+\b/, "/front-250");
+    else u = u.replace(/\/front\/?(?=[?#]|$)/, "/front-250");
   }
+  const needsProxy = /coverartarchive\.org|archive\.org|music\.126\.net|albumoftheyear\.org/i.test(u);
+  const base = String(meta?.base || "").replace(/\/$/, "");
+  if (base && (needsProxy || (!u && meta?.artist && meta?.title))) {
+    const q = new URLSearchParams();
+    if (u) q.set("u", u);
+    if (meta?.artist) q.set("artist", meta.artist);
+    if (meta?.title) q.set("title", meta.title);
+    return `${base}/api/cover?${q}`;
+  }
+  if (!u) return null;
   if (/bcbits\.com/i.test(u)) {
     return u.replace(/_(10|16|20)\.jpg(\?|$)/i, "_2.jpg$2");
   }
@@ -342,9 +351,13 @@ function wallThumb(url) {
 const COVER_EAGER = 28;
 const coverWarmed = new Set();
 
-function warmupCovers(items) {
+function thumbMeta(item, base) {
+  return { base, artist: item?.artist, title: item?.title };
+}
+
+function warmupCovers(items, base) {
   for (const item of items) {
-    const url = wallThumb(item.cover);
+    const url = wallThumb(item.cover, thumbMeta(item, base));
     if (!url || coverWarmed.has(url)) continue;
     coverWarmed.add(url);
     const im = new Image();
@@ -961,7 +974,7 @@ function card(item, state, t, idx = 0) {
   });
   const cover = el("div", "cover");
   cover.appendChild(tile(item));
-  const thumb = wallThumb(item.cover);
+  const thumb = wallThumb(item.cover, thumbMeta(item, state.base));
   if (thumb) {
     const img = document.createElement("img");
     img.onerror = () => img.remove();
@@ -1037,10 +1050,10 @@ function renderWall(state, data) {
     grid.style.gridTemplateColumns = "";
     grid.appendChild(el("div", "empty", state.grain === "month" ? t.emptyMonth : t.empty));
   } else if (isNewtab) {
-    warmupCovers(items);
+    warmupCovers(items, state.base);
     paintStack(grid, items, state, t);
   } else {
-    warmupCovers(items);
+    warmupCovers(items, state.base);
     renderSquareWall(grid, items, state, t);
   }
   setStatusText(status, t.status(gold.length, auto.length, Boolean(state.sync)));
@@ -1157,7 +1170,7 @@ function morebox(rest, state, t) {
   const mini = el("div", "mini");
   for (const r of rest.slice(0, 4)) {
     const cell = el("div", "minicell");
-    const thumb = wallThumb(r.cover);
+    const thumb = wallThumb(r.cover, thumbMeta(r, state.base));
     if (thumb) {
       const img = document.createElement("img");
       img.loading = "lazy";

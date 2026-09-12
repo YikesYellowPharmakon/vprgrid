@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { proxiedCover } from "@/lib/catalog/links";
 import { cn } from "@/lib/utils";
 import type { CatalogAlbum } from "@/lib/catalog/types";
@@ -25,8 +25,16 @@ export function Sleeve({
   const [broken, setBroken] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const big = size === "hero" || size === "lg";
-  const small = proxiedCover(album.coverUrl);
-  const src = proxiedCover(big ? album.coverUrlLg || album.coverUrl : album.coverUrl);
+  const who = { artist: album.artist, title: album.title };
+  const small = proxiedCover(album.coverUrl, who);
+  const src = proxiedCover(big ? album.coverUrlLg || album.coverUrl : album.coverUrl, {
+    ...who,
+    large: big,
+  });
+  useEffect(() => {
+    setBroken(false);
+    setLoaded(false);
+  }, [album.id, src]);
   const show = Boolean(src) && !broken;
   /** 大图版本另算一次回源,而列表用的小图往往已在缓存里:先垫小图,大图到了再淡入。 */
   const preview = big && small && small !== src ? small : null;

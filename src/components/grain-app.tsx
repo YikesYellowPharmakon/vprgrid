@@ -1676,12 +1676,13 @@ function fullDate(d: string | null): string {
 function GlobalHitRow({ hit, inRef, onAdd }: { hit: GlobalHit; inRef: boolean; onAdd: () => void }) {
   const t = useT();
   const [broken, setBroken] = useState(false);
+  const coverSrc = proxiedCover(hit.coverUrl, { artist: hit.artist, title: hit.title });
   return (
     <div className="flex items-center gap-3 py-3 sm:gap-4">
       <div className="size-12 shrink-0 overflow-hidden rounded-sm bg-raised shadow-[var(--shadow-border)]">
-        {hit.coverUrl && !broken ? (
+        {coverSrc && !broken ? (
           <img
-            src={proxiedCover(hit.coverUrl) ?? undefined}
+            src={coverSrc}
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
