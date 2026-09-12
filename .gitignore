@@ -17,6 +17,9 @@ dist/
 .env.*
 !.env.example
 
+# 本机档案(参考源 / 列表 / 口味的本地备份,属于个人数据)
+.data/
+
 # 可再生成的打包与 QA 产物
 release/
 screenshots/
@@ -24,6 +27,7 @@ artifacts/
 *.log
 .grok/preview.log
 .grok/status
+.grok/tmp/
 
 # 系统与 iCloud 噪音
 .DS_Store
@@ -35,3 +39,4 @@ artifacts/
 .idea/
 .vscode/
 *.swp
+.vercel

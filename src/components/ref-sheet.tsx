@@ -1,4 +1,4 @@
-import { Copy, LoaderCircle, RefreshCw, Trash2, X } from "lucide-react";
+import { Copy, LoaderCircle, Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { GoldEntry } from "@/lib/catalog/gold";
@@ -145,6 +145,21 @@ export function RefSheet({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const [pasteLabel, setPasteLabel] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
+
+  function startRename(src: RefSource) {
+    setRenaming(src.id);
+    setRenameDraft(src.label);
+  }
+
+  function commitRename(src: RefSource) {
+    const name = renameDraft.replace(/\s+/g, " ").trim().slice(0, 48);
+    setRenaming(null);
+    if (!name || name === src.label) return;
+    updateSource(src.id, { label: name });
+    toast(t.toastSourceRenamed(name));
+  }
 
   /** 识别新条目的风格并入口味(品味自动调整的入口)。 */
   function absorbTaste(entries: GoldEntry[]): number {
@@ -504,7 +519,27 @@ export function RefSheet({ open, onOpenChange }: { open: boolean; onOpenChange: 
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Badge tone={src.enabled ? "accent" : "muted"}>{t.kindLabel[src.kind]}</Badge>
-                          <p className="font-display truncate text-base leading-tight">{src.label}</p>
+                          {renaming === src.id ? (
+                            <input
+                              value={renameDraft}
+                              onChange={(e) => setRenameDraft(e.target.value)}
+                              onBlur={() => commitRename(src)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  (e.target as HTMLInputElement).blur();
+                                }
+                                if (e.key === "Escape") setRenaming(null);
+                              }}
+                              autoFocus
+                              maxLength={48}
+                              aria-label={t.renameSource}
+                              placeholder={t.phRenameSource}
+                              className="font-display h-8 min-w-0 flex-1 rounded-sm bg-surface px-2 text-base leading-tight text-fg shadow-[var(--shadow-border)] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            />
+                          ) : (
+                            <p className="font-display truncate text-base leading-tight">{src.label}</p>
+                          )}
                         </div>
                         <p className="mt-1 text-xs text-subtle tabular-nums">
                           {t.nEntries(n)}
@@ -550,6 +585,14 @@ export function RefSheet({ open, onOpenChange }: { open: boolean; onOpenChange: 
                           {isExpanded ? t.hideList : t.showList}
                         </button>
                       ) : null}
+                      <button
+                        type="button"
+                        onClick={() => startRename(src)}
+                        className="flex items-center gap-1 text-xs text-muted hover:text-fg"
+                      >
+                        <Pencil className="size-3" />
+                        {t.renameSource}
+                      </button>
                       {refSources.length > 1 ? (
                         <button
                           type="button"

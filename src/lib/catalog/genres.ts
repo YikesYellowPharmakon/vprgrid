@@ -1,3 +1,5 @@
+import { RARE_BY_PARENT } from "./rare-families";
+
 export type GenreDef = {
   id: string;
   label: string;
@@ -56,8 +58,7 @@ type FamilySpec = {
 };
 
 /**
- * 核心谱系(实验音乐 13 母类)= Baseline 预设。
- * 这里的子类 id 构成 BASELINE_TASTE,新用户默认口味。
+ * 核心谱系(实验音乐 13 母类)。默认口味是全库,不再单独开 Baseline。
  */
 const CORE_SOURCE: FamilySpec[] = [
   {
@@ -283,8 +284,7 @@ const CORE_SOURCE: FamilySpec[] = [
 
 /**
  * 扩充谱系(按 RYM / AOTY 总风格树补齐的大众与地域母类)。
- * 默认不在口味里(Baseline 之外),用户在口味 A–Z 里自行勾选,
- * 或由参考订阅导入时自动识别并入。
+ * 和核心谱系一起进默认全库。
  */
 const EXPANSION_SOURCE: FamilySpec[] = [
   {
@@ -590,7 +590,7 @@ const EXPANSION_SOURCE: FamilySpec[] = [
   },
 ];
 
-/** 既有核心母类的扩充子类(同样不进 Baseline)。 */
+/** 既有核心母类的扩充子类。 */
 const EXPANSION_EXTRA: Record<string, ChildSpec[]> = {
   "ambient-drone": [
     ["ambient-dub", "Ambient Dub", "氛围回响", ["ambient dub"]],
@@ -639,9 +639,13 @@ export function familyLetter(label: string): string {
   return m ? m[0]!.toUpperCase() : "#";
 }
 
+function withRare(family: FamilySpec): FamilySpec {
+  return { ...family, children: [...family.children, ...(RARE_BY_PARENT[family.id] ?? [])] };
+}
+
 const MERGED_SOURCE: FamilySpec[] = [
-  ...CORE_SOURCE.map((f) => ({ ...f, children: [...f.children, ...(EXPANSION_EXTRA[f.id] ?? [])] })),
-  ...EXPANSION_SOURCE,
+  ...CORE_SOURCE.map((f) => withRare({ ...f, children: [...f.children, ...(EXPANSION_EXTRA[f.id] ?? [])] })),
+  ...EXPANSION_SOURCE.map(withRare),
 ];
 
 export const GENRE_FAMILIES: GenreFamily[] = az(
@@ -656,26 +660,28 @@ export const GENRE_FAMILIES: GenreFamily[] = az(
 
 export const ALL_GENRES: GenreDef[] = GENRE_FAMILIES.flatMap((f) => f.children);
 
-/** Baseline 预设排除的核心母类(Rock & Post、Internet & Microgenre 保留在库里但默认不选)。 */
+/** 旧 Baseline(只给存档升级对照用):核心谱系去掉 Rock & Post、Internet & Microgenre。 */
 const BASELINE_EXCLUDED = new Set(["rock-post", "internet-microgenre"]);
-
-/** Baseline 预设 = 核心实验谱系中除上述两母类外的全部子类。 */
 export const BASELINE_TASTE: string[] = CORE_SOURCE.filter((f) => !BASELINE_EXCLUDED.has(f.id)).flatMap(
   (f) => f.children.map((c) => c[0]),
 );
 
-/** 全库预设 = 包括扩充母类在内的所有子类。 */
+/** 全库 = 所有内置子类。默认口味就是这一套。 */
 export const ALL_TASTE: string[] = ALL_GENRES.map((g) => g.id);
+export const DEFAULT_TASTE = ALL_TASTE;
 
-/** 新用户默认口味 = Baseline(扩充风格默认不勾选,不影响既有筛选结果)。 */
-export const DEFAULT_TASTE = BASELINE_TASTE;
+/** 存档/档案里还停在旧 Baseline 或空数组的,升成全库。自定义口味原样留下。 */
+export function normalizePersistedTaste(taste: string[]): string[] {
+  const set = new Set(taste);
+  const wasBaseline = taste.length === BASELINE_TASTE.length && BASELINE_TASTE.every((id) => set.has(id));
+  if (wasBaseline || taste.length === 0) return [...ALL_TASTE];
+  return taste;
+}
 
-/** 当前口味对应哪个预设。默认 Baseline 不算「自定义」,避免打开完整应用就像要先选口味。 */
-export function tastePreset(taste: string[]): "baseline" | "all" | "custom" {
+/** 当前口味对应哪个预设。默认全库不算「自定义」。 */
+export function tastePreset(taste: string[]): "all" | "custom" {
   const set = new Set(taste);
   if (ALL_TASTE.every((id) => set.has(id))) return "all";
-  const builtinOn = taste.filter((id) => ALL_TASTE.includes(id));
-  if (builtinOn.length === BASELINE_TASTE.length && BASELINE_TASTE.every((id) => set.has(id))) return "baseline";
   return "custom";
 }
 

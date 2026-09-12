@@ -38,11 +38,13 @@ src/
 │   ├── grain-app.tsx         # 主界面:周导航、参考标准区、自动雷达、搜索、导入桥、自动刷新
 │   ├── ref-sheet.tsx         # 参考设置面板(源列表/链接订阅/艺人追踪/粘贴导入/同步码)
 │   ├── album-sheet.tsx       # 专辑详情抽屉(代表曲、收听链接、AI 读封面)
-│   ├── taste-sheet.tsx       # 口味 A–Z 编辑器(可自增母类/子类)
+│   ├── taste-sheet.tsx       # 口味 A–Z 编辑器(可自增母类/子类、存自定义口味)
 │   ├── theme-sheet.tsx       # 皮肤选择器
+│   ├── vault-panel.tsx       # 本机备份一栏(上次备份/立即备份/两步确认恢复)
 │   └── sleeve.tsx            # 封面组件(CAA / 网易云图源)
 └── lib/
     ├── store.ts              # zustand 全局状态(persist)
+    ├── vault.ts              # 本机档案:快照/写入/空白判定/自动接回
     ├── themes.ts             # 皮肤清单与 applyTheme
     ├── export.ts             # CSV / JSON / ICS / 离线 HTML 导出
     └── catalog/
@@ -54,7 +56,7 @@ src/
         ├── api.ts            # getWeekCatalog:ListenBrainz 抓取 + MB 日期直查补全 + 艺人窗口计数
         ├── search.ts         # Server Function:全网检索聚合(MB/iTunes/Deezer/Discogs)
         ├── score.ts          # 打分/排序/过滤(含流水线规则)
-        ├── genres.ts         # 风格分类体系(27 母类 359 子类)与推断;Baseline/全库预设
+        ├── genres.ts         # 风格分类体系(27 母类,风格介绍库并入旧母类)与推断;默认全库
         ├── artists.ts        # 实验乐艺人名册(艺人分量)
         ├── analyze.ts        # ★ AI 接口:封面识别(见下)
         ├── artist-ai.ts      # ★ AI 接口:艺人背景分析(四维度,不确定留空)
@@ -76,11 +78,13 @@ src/
 
 ### 风格分类体系与口味预设
 
-`genres.ts` 分两层数据源:`CORE_SOURCE`(原始 13 个实验母类 · 128 子类)与 `EXPANSION_SOURCE` + `EXPANSION_EXTRA`(按 RYM / AOTY 总风格树扩充的 14 个新母类与既有母类的补充子类),合并后共 **27 母类 · 359 子类**。导出三个口味集合:
+`genres.ts` 分两层数据源:`CORE_SOURCE`(原始 13 个实验母类)与 `EXPANSION_SOURCE` + `EXPANSION_EXTRA`(按 RYM / AOTY 总风格树扩充的 14 个新母类与既有母类的补充子类),再经 `rare-families.ts` 把风格介绍库能对上的条目并进旧母类(撞名跳过,不另开母类),仍是 **27 母类**。导出口味集合:
 
-- `BASELINE_TASTE` = 核心谱系去掉 `rock-post` 与 `internet-microgenre` 两母类后的 101 子类(`BASELINE_EXCLUDED`),**`DEFAULT_TASTE` 等于它**——扩充风格默认不勾选,不影响既有用户的筛选结果;
-- `ALL_TASTE` = 全部 359 子类;
-- `tastePreset(taste)` 判定当前口味属于 `baseline` / `all` / `custom`,主页芯片与口味表的预设按钮都用它。
+- `ALL_TASTE` = 全部内置子类,**`DEFAULT_TASTE` 等于它**;
+- `BASELINE_TASTE` 只给存档升级对照(旧默认:核心谱系去掉 `rock-post` 与 `internet-microgenre`);`normalizePersistedTaste` 会把还停在这份旧集合或空数组的存档升成全库;
+- `tastePreset(taste)` 判定当前口味属于 `all` / `custom`,主页芯片与口味表的预设按钮都用它。
+
+用户自己存的口味另走 store 里的 `tastePresets: TastePreset[]`(`{ id, name, ids, savedAt }`,`saveTastePreset` 同名覆盖、`applyTastePreset` 整份替换 `taste`),进 `partialize` 与本机档案;口味表顶部的「我的口味」渲染它,当前勾选与某份存档集合相等时点亮那枚标签。
 
 风格推断 `inferGenres` 采用**双层匹配**防误判:标签 + 官方二级类型(strong)按全部同义词匹配;标题 + 艺人名(weak)只允许「有区分度」的同义词命中(多词短语或 ≥7 字符)——否则标题里一个 "House"/"Trap" 就会污染结果。
 
@@ -99,6 +103,16 @@ src/
 `src/routes/api/radar.ts`(TanStack Server Route,CORS `*`):`GET /api/radar?week=<周一>&taste=<风格id逗号列表>` 返回该周内置参考 + 服务端按口味过筛的自动雷达(≤40 条,15 分钟 CDN 缓存)。
 
 `src/routes/api/sync.ts`(CORS `*`,内存存储):**免复制直连同步**。应用前端在口味 / 参考池 / 主题变化后 1.2s(`grain-app.tsx` 的 effect,负载由 `src/lib/sync.ts` 的 `buildSyncCode` 构建)`POST /api/sync` 推送最新负载;插件打开时 `GET /api/sync` 拉取并落盘到 `chrome.storage.local`(拉不到则回退已存同步码)。「复制同步码」按钮保留为备份路径,剪贴板不可用时走 `copyText` 的 execCommand 兜底并提示直连已完成。
+
+### 本机档案(清浏览器数据不丢)
+
+参考池与列表原本只在 localStorage + IndexedDB(`grain-storage.ts`)里,浏览器一清站点数据就归零。`src/routes/api/vault.ts` 把「用户自己攒出来的那部分状态」落到跑着应用的机器上:
+
+- **文件**:`.data/vault.json`(已 gitignore),`VPRGRID_VAULT_DIR` 可改目录。写入前先把当前那份 `rename` 成 `vault.prev.json`,再用临时文件原子替换;`GET /api/vault?prev=1` 能读回上一份。
+- **进档案的字段**由 `src/lib/vault.ts` 的 `FIELDS` 决定:`refSources` / `userLists` / `taste` / `tastePresets` / 自定义母类子类 / 过滤与主题偏好。**不进**:`aiConf`(含密钥)、`artistNotes` 与 `sleeves`(可再生成的 AI 缓存)。
+- **两条铁律**:① 只有本地「空白」(只有默认空收藏 + 只有内置源 + 没有存过口味,`isBlank`)时才自动 `applySnapshot`,已经有内容时绝不覆盖用户手上的东西;② 空白状态绝不写档案,否则清完数据后的第一次自动写入会把档案抹平。
+- **时机**:`grain-app.tsx` 的水合 effect 在 `ensureSavedList` 之后 `await maybeRestoreVault()`,恢复成功弹一句 toast,然后 `startVaultWatch()`(订阅 store,4 秒防抖 + 页面隐藏时立刻 flush)。恢复的重字段由既有的 `watchHeavyPersist` 顺带写回 IndexedDB。
+- **只读部署**(Vercel)写入必然失败,`POST` 返回 `ok:false, reason:"readonly"`,前端静默降级,只在「下载到 Mac」面板里把那一栏文案换成提示手动导出。
 
 ### 流水线规则(高产低区分度艺人)
 
@@ -202,7 +216,7 @@ node --test scripts/gold-recall.test.mjs        # 校验(张数断言随歌单�
 node scripts/local-smoke.mjs http://127.0.0.1:8080/ dev   # 桌面+移动截图、控制台错误、召回探针
 node scripts/local-qa-deep.mjs                             # 参考周视图、Michiru 回归、皮肤切换
 node scripts/local-qa-sources.mjs                          # 多源订阅:迁移/粘贴/CSV/艺人追踪/导入桥/同步码/API
-node scripts/local-qa-taste2.mjs                           # 口味扩库/Baseline 预设/结果删除/源多选单选/专辑直加
+node scripts/local-qa-taste2.mjs                           # 口味扩库/全库预设/结果删除/源多选单选/专辑直加
 node scripts/local-qa-ext.mjs                              # 浏览器插件:真实加载,新标签页/弹窗/设置/同步码
 ```
 
@@ -219,6 +233,8 @@ npx vercel deploy --prebuilt --prod
 
 在托管平台的环境变量里配置 `AI_API_KEY` 等(可选);另可配置 `DISCOGS_TOKEN`(Discogs 个人访问令牌)为全网检索启用 Discogs 官方 API,不配则该源自动跳过。用户拿到 URL 即可使用,并可作为 PWA 安装到本机(见使用者文档)。也可推到 GitHub 后在 Vercel 控制台一键导入,构建命令 `npm run build`。
 
+**公开演示站** — `npm run deploy:demo` 以 `VITE_VPRGRID_DEMO=1` 构建并推到 Vercel:参考池为空、不打亲选歌单、不写本机档案,顶栏标明演示。本机 `npm run dev` 不带这个变量,仍是完整个人应用。
+
 **源码分发** — 其他开发者克隆仓库后 `npm install && npm run dev` 即可,无任何外部服务依赖(AI 可选)。
 
 **桌面化(可选方向)** — 如需真正的安装包(.dmg/.exe),可用 Tauri/Electron 包一层 WebView 指向部署地址或本地服务;当前 PWA 安装已覆盖绝大多数桌面场景。
@@ -227,7 +243,7 @@ npx vercel deploy --prebuilt --prod
 
 Manifest V3,纯静态无构建步骤(vanilla JS + `shared/radar.css` 复刻 GRAIN 令牌):
 
-- `newtab.html` / `popup.html` + `shared/radar.js`:缩略图墙,数据来自 `/api/radar`;口味 / 主题优先走 `GET /api/sync` 直连(免复制),回退本地同步码(`chrome.storage.local`,注意**不要**用 storage.sync——同步码可达几十 KB,超其配额);新标签页另有时钟 / 天气(open-meteo,需 manifest `geolocation` 权限)/ 音乐快讯(Pitchfork RSS)小组件与墙宽滑杆(`wallW`);
+- `newtab.html` / `popup.html` + `shared/radar.js`:缩略图墙,数据来自 `/api/radar`;口味 / 主题优先走 `GET /api/sync` 直连(免复制),回退本地同步码(`chrome.storage.local`,注意**不要**用 storage.sync——同步码可达几十 KB,超其配额);新标签页上侧小组件为**本期统计**(参考 / 扫描池 / 过筛 / 流水线,未扫描显示省略号)、**音乐快讯**(Pitchfork RSS)和**风格介绍**,另有墙宽滑杆(`wallW`);风格库在 `shared/genres.js`,动态 import 并合并去重 `genres-world.js` + `genres-net.js`;两份数据文件缺失或写坏时 `loadGenres()` 只返回能读到的那部分,全空则整张卡片隐藏(不会白页)。抽签只从没看过的里挑、看过的 id 存 `genreSeen`,整库看完自动清零;首屏静态数字雨在 `prerain.js`(MV3 的 CSP 不执行内联脚本,别搬回 HTML 里);
 - `content/rym.js` / `content/aoty.js`:注入「导入到 GRAIN 雷达」按钮,在用户会话内 DOMParser 翻页收集(≤60 页,900ms/页),经 `#refimport=` 桥递给应用;
 - `options.html`:应用地址 + 同步码;
 - 图标由 `node scripts/gen-ext-icons.mjs` 生成。

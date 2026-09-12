@@ -2,16 +2,18 @@
 
 面向实验音乐听众的「2026 每周新发行」筛选器:以**多源参考订阅**为品味基准(内置默认参考 364 张 100% 召回,可叠加网易云歌单 / RYM / AOTY / RSS / 艺人追踪,输入什么品味就跟着什么调整),叠加公开目录自动抓取,按自然周分组,支持口味定制与 11 款界面风格(默认 Matrix,全部带动态背景)。无账号、无数据库,数据存本机。配套 Chromium 浏览器插件(`extension/`):新标签页 + 工具栏弹窗的封面缩略图墙,RYM/AOTY 列表页一键导入。
 
+**在线演示（空参考，数据只留在你的浏览器）：** https://vprgrid.vercel.app
+
 ## 快速开始
 
-关掉 Cursor 或重启电脑后,可双击主目录里的 `快速启动.command`。或打开终端,进入本项目再启动(窗口不要关):
+需要本机已安装 [Node.js LTS](https://nodejs.org)。进入本仓库后:
 
 ```bash
-cd "/Users/ye/Library/Mobile Documents/com~apple~CloudDocs/Playground/NewMusic/V1"
+npm install
 npm run dev
 ```
 
-浏览器打开 http://127.0.0.1:8080 。第一次或依赖被删过时,先 `npm install` 再 `npm run dev`。
+浏览器打开 http://127.0.0.1:8080 。窗口不要关。也可以双击主目录里的 `快速启动.command`。
 
 发给朋友用 `npm run pack:release`。1.5.14 起压缩包里同时有 `extension/` 和 `app/`(完整应用源码)。朋友进入 `app` 后 `npm install` 再 `npm run dev`。旧包 1.5.10 只有插件,只装插件会灰屏。
 

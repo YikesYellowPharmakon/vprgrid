@@ -1,4 +1,4 @@
-/** QA:品牌名 VprGrid.SYS + 回扫补遗 + Baseline 101 + RYM 专属导入路径。 */
+/** QA:品牌名 VprGrid.SYS + 回扫补遗 + 全库默认 + RYM 专属导入路径。 */
 import { chromium } from "playwright";
 
 const BASE = process.env.QA_BASE ?? "http://127.0.0.1:8080";
@@ -22,10 +22,10 @@ ok("头部品牌为 VprGrid.SYS", (await page.getByText(/VprGrid.SYS · \d{4}/).
 const title = await page.title();
 ok("页面标题含 VprGrid.SYS", title.includes("VprGrid.SYS"), title);
 
-// 2) Baseline 默认 101/359,且不含 rock/internet 母类卡
+// 2) 默认全库
 const summary = await page.locator("span.text-xs.text-subtle.tabular-nums").first().innerText();
-ok("默认口味为 Baseline 101/359", summary.includes("101/359"), summary);
-ok("主页无 Rock & Post 母类卡", (await page.locator("button", { hasText: "Rock & Post" }).count()) === 0);
+ok("默认口味为全库 N/N", /· (\d+)\/\1 子类 ·/.test(summary), summary);
+ok("主页有全库芯片", (await page.getByRole("button", { name: "全库", exact: true }).count()) >= 1);
 
 // 3) 回扫补遗:切到上一周,点回扫,等完成 toast
 ok("周导航旁有回扫补遗按钮", (await page.getByRole("button", { name: "回扫补遗" }).count()) >= 1);

@@ -1,0 +1,5 @@
+{
+  "framework": null,
+  "buildCommand": "VITE_VPRGRID_DEMO=1 VITE_AUTH_ENABLED=false npm run build",
+  "installCommand": "npm ci"
+}

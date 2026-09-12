@@ -13,7 +13,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { syncMatrixRain } from "@/lib/matrix-rain";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "VprGrid.sys";
+const APP_NAME = "VprGrid.SYS · 每周新专雷达";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -23,12 +23,16 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "2026 每周新专雷达：参考亲选 + 实验音乐自动抓取，按自然周分组，一专一代表曲。",
+        content:
+          "这周有什么值得听的实验 / 小众新专辑？VprGrid 按口味从公开目录过筛。不用注册，数据只留在你的浏览器。",
       },
       { name: "theme-color", content: "#020703" },
     ],
     links: [
-      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/png", sizes: "16x16", href: "/icon-16.png" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/icon-32.png" },
+      { rel: "icon", type: "image/png", sizes: "48x48", href: "/icon-48.png" },
+      { rel: "icon", type: "image/png", sizes: "128x128", href: "/icon-128.png" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },

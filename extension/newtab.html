@@ -3,6 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <title>VprGrid</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://p1.music.126.net" crossorigin />
@@ -66,18 +68,29 @@
           </div>
         </div>
         <div class="widgets">
-          <div class="widget wclock">
-            <span class="clock" id="clock">–:–</span>
-            <span class="wdate" id="wdate">–</span>
-          </div>
-          <div class="widget wweather" id="weatherw" hidden>
-            <span class="wicon" id="wicon"></span>
-            <span class="wtemp" id="wtemp"></span>
-            <span class="wdesc" id="wdesc"></span>
+          <div class="widget wstats" id="statsw">
+            <span class="statshead" id="statshead">本期</span>
+            <p class="statline"><span class="statlabel" id="statreflab">参考</span><span class="statnum" id="statref">…</span></p>
+            <p class="statline"><span class="statlabel" id="statpoollab">扫描池</span><span class="statnum" id="statpool">…</span></p>
+            <p class="statline"><span class="statlabel" id="statpasslab">本期过筛</span><span class="statnum" id="statpass">…</span></p>
+            <p class="statline"><span class="statlabel" id="statlinelab">流水线</span><span class="statnum" id="statline">…</span></p>
           </div>
           <div class="widget wnews">
             <span class="newshead" id="newshead">音乐快讯</span>
             <ul class="newslist" id="newslist"></ul>
+          </div>
+          <div class="widget wgenre" id="genrew">
+            <div class="genretop">
+              <span class="genrehead" id="genrehead">风格介绍</span>
+              <span class="genrenav">
+                <button id="genreprev" type="button" aria-label="上一个风格">‹</button>
+                <button id="genrenext" type="button" aria-label="换一个风格">›</button>
+              </span>
+            </div>
+            <p class="genrename" id="genrename">–</p>
+            <p class="genrewhere" id="genrewhere"></p>
+            <p class="genredesc" id="genredesc"></p>
+            <p class="genrekey" id="genrekey"></p>
           </div>
         </div>
         <div class="wallscroll">
@@ -87,11 +100,12 @@
           <span id="ftleft">参考亲选置顶 · 雷达过筛补充</span>
           <span class="wallbtns">
             <span class="sizers">
-              <label class="sizer" id="sizerw"><span class="sizeraxis">↔</span><input id="wallsize" type="range" min="600" max="1080" step="10" value="920" title="调整墙宽" /></label>
+              <label class="sizer" id="sizerw"><span class="sizeraxis">↔</span><input id="wallsize" type="range" min="760" max="1080" step="10" value="920" title="调整墙宽" /></label>
               <label class="sizer" id="sizerh"><span class="sizeraxis">↕</span><input id="wallhsize" type="range" min="96" max="176" step="4" value="128" title="调整封面高度" /></label>
               <label class="sizer" id="sizercw"><span class="sizeraxis">▭</span><input id="coverwsize" type="range" min="72" max="200" step="4" value="128" title="调整封面宽度" /></label>
-              <label class="sizer" id="sizery"><span class="sizeraxis">⇅</span><input id="wallpos" type="range" min="-72" max="140" step="4" value="0" title="调整大框上下位置" /></label>
+              <label class="sizer" id="sizery"><span class="sizeraxis">⇅</span><input id="wallpos" type="range" min="-44" max="88" step="4" value="0" title="调整大框上下位置" /></label>
               <label class="sizer" id="sizerv"><span class="sizeraxis">⇕</span><input id="wallstretch" type="range" min="0" max="220" step="8" value="0" title="上下拉长大框" /></label>
+              <button class="sizer sizerreset" id="resetlayout" type="button" title="恢复默认布局"><span class="sizeraxis">⟲</span><span id="resetlayoutlabel">默认</span></button>
             </span>
             <button id="today" class="wallbtn" type="button">本月</button>
             <button id="reload" class="wallbtn" type="button">刷新</button>
@@ -102,31 +116,7 @@
         </div>
       </section>
     </div>
-    <script>
-      (function () {
-        try {
-          var t = document.documentElement.getAttribute("data-theme");
-          if (t && t !== "matrix") return;
-          var h = document.getElementById("bgfx");
-          if (!h || h.querySelector(".prerain")) return;
-          var d = document.createElement("div");
-          d.className = "prerain";
-          d.setAttribute("aria-hidden", "true");
-          var g = "ﾅｱﾜｦﾊﾗﾝｼｿｷﾎｳﾔﾂﾈﾒｹﾙ0123456789=*+<>♪♫#";
-          var n = g.length;
-          var cols = Math.ceil((innerWidth || 800) / 16);
-          var rows = Math.ceil((innerHeight || 600) / 15) + 3;
-          var f = document.createDocumentFragment();
-          for (var i = 0; i < cols * rows; i++) {
-            var cell = document.createElement("span");
-            cell.textContent = g[(Math.random() * n) | 0];
-            f.appendChild(cell);
-          }
-          d.appendChild(f);
-          h.insertBefore(d, h.firstChild);
-        } catch (e) {}
-      })();
-    </script>
+    <script src="prerain.js"></script>
     <script type="module" src="boot.js"></script>
   </body>
 </html>

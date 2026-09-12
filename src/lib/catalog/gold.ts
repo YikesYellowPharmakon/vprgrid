@@ -3,6 +3,7 @@
  * 内置默认参考(364 张,构建期打包);用户可导入任意网易云歌单替换之。
  * 参考条目享受硬性召回:永远展示、不参与算法过滤、可跨周搜索。
  */
+import { isPublicDemo } from "../demo";
 import { searchLinks } from "./links";
 import { isUnknownReleaseDate, neutralizeGuessedDates } from "./release-date";
 import type { CatalogAlbum } from "./types";
@@ -23,8 +24,8 @@ export type GoldEntry = {
   dateUnknown?: boolean;
 };
 
-/** 内置默认参考(可被用户导入的歌单替换)。 */
-export const DEFAULT_REF_ENTRIES = defaultRaw as GoldEntry[];
+/** 内置默认参考(可被用户导入的歌单替换)。公开演示构建为空，避免把亲选打进访客包。 */
+export const DEFAULT_REF_ENTRIES = (isPublicDemo ? [] : defaultRaw) as GoldEntry[];
 
 export function normalizeKey(s: string): string {
   return s

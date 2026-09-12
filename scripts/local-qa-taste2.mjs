@@ -1,4 +1,4 @@
-/** QA:口味扩库 + Baseline 预设 + 结果删除 + 参考设置多选/单选 + 单专辑直加。 */
+/** QA:口味扩库 + 全库预设 + 结果删除 + 参考设置多选/单选 + 单专辑直加。 */
 import { chromium } from "playwright";
 
 const BASE = process.env.QA_BASE ?? "http://127.0.0.1:8080";
@@ -17,27 +17,16 @@ await page.goto(BASE, { waitUntil: "domcontentloaded" });
 await page.waitForSelector("h1");
 await page.waitForTimeout(1500);
 
-// 1) Baseline 预设默认激活,主页芯片可见
-const baselineChip = page.getByRole("button", { name: "Baseline", exact: true }).first();
-ok("主页出现 Baseline 预设芯片", (await baselineChip.count()) >= 1);
+// 1) 默认就是全库
+const allChip = page.getByRole("button", { name: "全库", exact: true }).first();
+ok("主页出现全库预设芯片", (await allChip.count()) >= 1);
 const summary = await page.locator("span.text-xs.text-subtle.tabular-nums").first().innerText();
-ok("口味摘要为 101/359(Baseline 默认)", summary.includes("101/359"), summary);
-
-// 2) 母类卡片折叠:未启用母类聚合成虚线卡
-ok("出现「还有 N 个母类未启用」卡片", (await page.getByText(/还有 \d+ 个母类未启用/).count()) >= 1);
-
-// 3) 切到「全库」再切回 Baseline
-await page.getByRole("button", { name: "全库", exact: true }).click();
-await page.waitForTimeout(400);
-const summary2 = await page.locator("span.text-xs.text-subtle.tabular-nums").first().innerText();
-ok("全库预设 = 359/359", summary2.includes("359/359"), summary2);
-ok("全库时虚线卡消失", (await page.getByText(/还有 \d+ 个母类未启用/).count()) === 0);
+ok("默认口味为全库 N/N", /· (\d+)\/\1 子类 ·/.test(summary), summary);
+ok("全库时没有「还有未启用母类」虚线卡", (await page.getByText(/还有 \d+ 个母类未启用/).count()) === 0);
+ok("主页没有 Baseline 芯片", (await page.getByRole("button", { name: "Baseline", exact: true }).count()) === 0);
 await page.screenshot({ path: `${shots}/qa-taste2-all.png` });
-await baselineChip.click();
-await page.waitForTimeout(400);
-ok("切回 Baseline = 101/359", (await page.locator("span.text-xs.text-subtle.tabular-nums").first().innerText()).includes("101/359"));
 
-// 4) 口味表:新母类存在 + Baseline 按钮
+// 4) 口味表:新母类存在,并进旧母类,不另开两个大母类
 for (let i = 0; i < 4; i++) {
   if (await page.locator("h3", { hasText: "Hip Hop" }).count()) break;
   await page.getByRole("button", { name: "口味 A–Z", exact: true }).first().click();
@@ -46,7 +35,9 @@ for (let i = 0; i < 4; i++) {
 ok("口味表含新母类 Hip Hop", (await page.locator("h3", { hasText: "Hip Hop" }).count()) >= 1);
 ok("口味表含新母类 Dance & Club", (await page.locator("h3", { hasText: "Dance & Club" }).count()) >= 1);
 ok("口味表含新母类 Metal", (await page.locator("h3", { hasText: /^Metal$/ }).count()) >= 1);
-ok("口味表有 Baseline 预设按钮", (await page.getByRole("button", { name: /核心 101 子类/ }).count()) >= 1);
+ok("口味表没有 World & Roots", (await page.locator("h3", { hasText: "World & Roots" }).count()) === 0);
+ok("口味表没有 Club & Underground", (await page.locator("h3", { hasText: "Club & Underground" }).count()) === 0);
+ok("口味表没有 Baseline 按钮", (await page.getByRole("button", { name: /核心 101 子类/ }).count()) === 0);
 await page.screenshot({ path: `${shots}/qa-taste2-sheet.png` });
 await page.keyboard.press("Escape");
 await page.waitForTimeout(400);

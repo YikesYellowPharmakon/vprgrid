@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import {
   DEFAULT_TASTE,
+  normalizePersistedTaste,
   GENRE_FAMILIES,
   mergeTaxonomy,
   slugify,
@@ -25,7 +26,20 @@ import {
   normalizeRefUrl,
   type RefSource,
 } from "./catalog/sources";
+import { isPublicDemo } from "./demo";
 import { grainStorage, writeHeavy } from "./grain-storage";
+import {
+  albumToListItem,
+  ensureSavedList,
+  makeSavedList,
+  mergeListEntries,
+  newListId,
+  SAVED_LIST_ID,
+  savedIdsOf,
+  type AlbumSnap,
+  type ListAlbum,
+  type UserList,
+} from "./catalog/lists";
 import type { CoverReading, ScoreWeights } from "./catalog/types";
 import { applyTheme, DEFAULT_CUSTOM, normalizeThemeId, type CustomTheme, type ThemeId } from "./themes";
 
@@ -49,11 +63,16 @@ type GrainState = {
   refSources: RefSource[];
   types: Array<"Album" | "EP">;
   saved: string[];
+  /** 用户专辑列表;收藏是默认且不可删的那一份。 */
+  userLists: UserList[];
+  activeListId: string;
   hidden: string[];
   sleeves: Record<string, CoverReading>;
   view: "list" | "grid";
   customFamilies: CustomFamily[];
   customGenres: CustomGenre[];
+  /** 存下来的口味选择:一套勾选一份,随时切回去。 */
+  tastePresets: TastePreset[];
   toggleTaste: (id: string) => void;
   setTaste: (ids: string[]) => void;
   toggleFamily: (childIds: string[]) => void;
@@ -81,7 +100,15 @@ type GrainState = {
   addRefExtra: (e: GoldEntry) => void;
   removeRefExtra: (albumId: number) => void;
   setTypes: (t: Array<"Album" | "EP">) => void;
-  toggleSaved: (id: string) => void;
+  toggleSaved: (album: AlbumSnap) => void;
+  addToList: (listId: string, album: AlbumSnap) => boolean;
+  addManyToList: (listId: string, items: ListAlbum[]) => { added: number; skipped: number };
+  removeFromList: (listId: string, key: string) => void;
+  reorderList: (listId: string, fromKey: string, toKey: string) => void;
+  createList: (name: string) => string | null;
+  renameList: (id: string, name: string) => void;
+  removeList: (id: string) => void;
+  setActiveList: (id: string) => void;
   toggleHidden: (id: string) => void;
   setSleeve: (id: string, reading: CoverReading) => void;
   setView: (v: "list" | "grid") => void;
@@ -89,6 +116,17 @@ type GrainState = {
   addCustomGenre: (parentId: string, label: string, zh: string, synonyms: string[]) => string | null;
   removeCustomFamily: (id: string) => void;
   removeCustomGenre: (id: string) => void;
+  /** 把当前勾选存成一份口味;同名则覆盖。返回 id,空名或空勾选返回 null。 */
+  saveTastePreset: (name: string) => string | null;
+  applyTastePreset: (id: string) => void;
+  removeTastePreset: (id: string) => void;
+};
+
+export type TastePreset = {
+  id: string;
+  name: string;
+  ids: string[];
+  savedAt: string;
 };
 
 function cleanLabel(s: string): string {
@@ -120,11 +158,14 @@ export const useGrain = create<GrainState>()(
       refSources: [makeBuiltinSource(true)],
       types: ["Album", "EP"],
       saved: [],
+      userLists: [makeSavedList()],
+      activeListId: SAVED_LIST_ID,
       hidden: [],
       sleeves: {},
       view: "list",
       customFamilies: [],
       customGenres: [],
+      tastePresets: [],
       toggleTaste: (id) => {
         const cur = get().taste;
         set({ taste: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] });
@@ -165,9 +206,7 @@ export const useGrain = create<GrainState>()(
               const { entries } = mergeGoldEntries(hit.entries, src.entries);
               return {
                 refSources: s.refSources.map((x) =>
-                  x.id === hit.id
-                    ? { ...x, ...src, id: hit.id, kind: hit.kind, entries, lastSync: src.lastSync ?? x.lastSync }
-                    : x,
+                  x.id === hit.id ? { ...x, entries, lastSync: src.lastSync ?? x.lastSync } : x,
                 ),
               };
             }
@@ -259,9 +298,87 @@ export const useGrain = create<GrainState>()(
             .filter((x) => !(x.kind === "manual" && x.entries.length === 0)),
         })),
       setTypes: (t) => set({ types: t.length ? t : ["Album", "EP"] }),
-      toggleSaved: (id) => {
-        const cur = get().saved;
-        set({ saved: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] });
+      toggleSaved: (album) => {
+        const lists = ensureSavedList(get().userLists, get().saved);
+        const item = albumToListItem(album);
+        if (!item) return;
+        const fav = lists.find((l) => l.id === SAVED_LIST_ID) ?? makeSavedList();
+        const has = fav.entries.some((e) => e.key === item.key || (item.albumId && e.albumId === item.albumId));
+        const entries = has
+          ? fav.entries.filter((e) => e.key !== item.key && e.albumId !== item.albumId)
+          : [...fav.entries, item];
+        const userLists = lists.map((l) => (l.id === SAVED_LIST_ID ? { ...fav, locked: true, entries } : l));
+        set({ userLists, saved: savedIdsOf(userLists) });
+      },
+      addToList: (listId, album) => {
+        const item = albumToListItem(album);
+        if (!item) return false;
+        const lists = ensureSavedList(get().userLists, get().saved);
+        const target = lists.find((l) => l.id === listId);
+        if (!target) return false;
+        if (target.entries.some((e) => e.key === item.key || (item.albumId && e.albumId === item.albumId))) return false;
+        const userLists = lists.map((l) => (l.id === listId ? { ...l, entries: [...l.entries, item] } : l));
+        set({ userLists, saved: savedIdsOf(userLists) });
+        return true;
+      },
+      addManyToList: (listId, items) => {
+        const lists = ensureSavedList(get().userLists, get().saved);
+        const target = lists.find((l) => l.id === listId);
+        if (!target) return { added: 0, skipped: items.length };
+        const merged = mergeListEntries(target.entries, items);
+        const userLists = lists.map((l) => (l.id === listId ? { ...l, entries: merged.entries } : l));
+        set({ userLists, saved: savedIdsOf(userLists) });
+        return { added: merged.added, skipped: merged.skipped };
+      },
+      removeFromList: (listId, key) => {
+        const lists = ensureSavedList(get().userLists, get().saved);
+        const userLists = lists.map((l) =>
+          l.id === listId ? { ...l, entries: l.entries.filter((e) => e.key !== key && e.albumId !== key) } : l,
+        );
+        set({ userLists, saved: savedIdsOf(userLists) });
+      },
+      reorderList: (listId, fromKey, toKey) => {
+        if (fromKey === toKey) return;
+        const lists = ensureSavedList(get().userLists, get().saved);
+        const userLists = lists.map((l) => {
+          if (l.id !== listId) return l;
+          const from = l.entries.findIndex((e) => e.key === fromKey);
+          const to = l.entries.findIndex((e) => e.key === toKey);
+          if (from < 0 || to < 0) return l;
+          const next = l.entries.slice();
+          const [moved] = next.splice(from, 1);
+          next.splice(to, 0, moved);
+          return { ...l, entries: next };
+        });
+        set({ userLists });
+      },
+      createList: (name) => {
+        const label = cleanLabel(name);
+        if (!label) return null;
+        const lists = ensureSavedList(get().userLists, get().saved);
+        const id = newListId();
+        const userLists = [...lists, { id, name: label, locked: false, entries: [] }];
+        set({ userLists });
+        return id;
+      },
+      renameList: (id, name) => {
+        if (id === SAVED_LIST_ID) return;
+        const label = cleanLabel(name);
+        if (!label) return;
+        set({
+          userLists: ensureSavedList(get().userLists, get().saved).map((l) => (l.id === id ? { ...l, name: label } : l)),
+        });
+      },
+      removeList: (id) => {
+        if (id === SAVED_LIST_ID) return;
+        const lists = ensureSavedList(get().userLists, get().saved).filter((l) => l.id !== id);
+        const activeListId = get().activeListId === id ? SAVED_LIST_ID : get().activeListId;
+        set({ userLists: lists, activeListId, saved: savedIdsOf(lists) });
+      },
+      setActiveList: (id) => {
+        const lists = ensureSavedList(get().userLists, get().saved);
+        if (!lists.some((l) => l.id === id)) return;
+        set({ activeListId: id });
       },
       toggleHidden: (id) => {
         const cur = get().hidden;
@@ -328,12 +445,34 @@ export const useGrain = create<GrainState>()(
           taste: get().taste.filter((t) => t !== id),
         });
       },
+      saveTastePreset: (name) => {
+        const label = cleanLabel(name);
+        const ids = get().taste;
+        if (!label || ids.length === 0) return null;
+        const presets = get().tastePresets;
+        const savedAt = new Date().toISOString();
+        const hit = presets.find((p) => p.name.toLowerCase() === label.toLowerCase());
+        if (hit) {
+          set({ tastePresets: presets.map((p) => (p.id === hit.id ? { ...p, ids: [...ids], savedAt } : p)) });
+          return hit.id;
+        }
+        // 名字多是中文,slugify 出不来可用的 id,直接给一个时间戳 id
+        const id = `tp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+        set({ tastePresets: [...presets, { id, name: label, ids: [...ids], savedAt }] });
+        return id;
+      },
+      applyTastePreset: (id) => {
+        const hit = get().tastePresets.find((p) => p.id === id);
+        if (!hit) return;
+        set({ taste: [...hit.ids] });
+      },
+      removeTastePreset: (id) => set({ tastePresets: get().tastePresets.filter((p) => p.id !== id) }),
     }),
     {
-      name: "grain-friday-v4",
+      name: isPublicDemo ? "vprgrid-demo-v4" : "grain-friday-v4",
       skipHydration: true,
       storage: createJSONStorage(() => grainStorage),
-      version: 9,
+      version: 13,
       partialize: (s) => ({
         taste: s.taste,
         weights: s.weights,
@@ -347,10 +486,12 @@ export const useGrain = create<GrainState>()(
         aiConf: s.aiConf,
         types: s.types,
         saved: s.saved,
+        activeListId: s.activeListId,
         hidden: s.hidden,
         view: s.view,
         customFamilies: s.customFamilies,
         customGenres: s.customGenres,
+        tastePresets: s.tastePresets,
       }),
       migrate: (persisted, version) => {
         // v1 → v2:refPlaylist(单一歌单)+ refExtras(手动)迁移为多源订阅。
@@ -420,6 +561,25 @@ export const useGrain = create<GrainState>()(
         if (version < 9 && Array.isArray(s.refSources)) {
           s.refSources = s.refSources.map((src) => ensureBandcampSource(src));
         }
+        if (version < 10) {
+          const next = s as { userLists?: UserList[]; saved?: string[]; activeListId?: string };
+          next.userLists = ensureSavedList(next.userLists, next.saved);
+          next.activeListId = next.activeListId && next.userLists.some((l) => l.id === next.activeListId)
+            ? next.activeListId
+            : SAVED_LIST_ID;
+          next.saved = savedIdsOf(next.userLists);
+        }
+        // v10 → v11:冷门风格已并进内置谱系,清掉当时挂在自定义「冷门与地域」下的重复项
+        if (version < 11) {
+          const next = s as { customFamilies?: CustomFamily[]; customGenres?: CustomGenre[] };
+          next.customGenres = (next.customGenres ?? []).filter((g) => g.parentId !== "cf-rare-regional");
+          next.customFamilies = (next.customFamilies ?? []).filter((f) => f.id !== "cf-rare-regional");
+        }
+        // v11 → v13:默认改为全库;还停在旧 Baseline 的存档跟着升上去
+        if (version < 13) {
+          const next = s as { taste?: string[] };
+          next.taste = normalizePersistedTaste(Array.isArray(next.taste) ? next.taste : []);
+        }
         return s;
       },
     },
@@ -436,13 +596,15 @@ export function watchHeavyPersist() {
   let lastRef = s0.refSources;
   let lastNotes = s0.artistNotes;
   let lastSleeves = s0.sleeves;
-  void writeHeavy({ refSources: lastRef, artistNotes: lastNotes, sleeves: lastSleeves });
+  let lastLists = s0.userLists;
+  void writeHeavy({ refSources: lastRef, artistNotes: lastNotes, sleeves: lastSleeves, userLists: lastLists });
   useGrain.subscribe((s) => {
-    if (s.refSources === lastRef && s.artistNotes === lastNotes && s.sleeves === lastSleeves) return;
+    if (s.refSources === lastRef && s.artistNotes === lastNotes && s.sleeves === lastSleeves && s.userLists === lastLists) return;
     lastRef = s.refSources;
     lastNotes = s.artistNotes;
     lastSleeves = s.sleeves;
-    void writeHeavy({ refSources: lastRef, artistNotes: lastNotes, sleeves: lastSleeves });
+    lastLists = s.userLists;
+    void writeHeavy({ refSources: lastRef, artistNotes: lastNotes, sleeves: lastSleeves, userLists: lastLists });
   });
 }
 

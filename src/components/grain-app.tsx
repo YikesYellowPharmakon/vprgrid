@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   List,
   ListMusic,
+  ListPlus,
   LoaderCircle,
   Palette,
   Play,
@@ -31,6 +32,7 @@ import {
   ensureAppleSource,
   ensureBandcampSource,
   ensureBuiltinPlaylist,
+  peelForeignPlaylistFromBuiltin,
   itemsToEntries,
   mergeGoldEntries,
   mergeSourceEntries,
@@ -40,6 +42,7 @@ import {
 } from "@/lib/catalog/sources";
 import { ALL_TASTE, inferGenres, tastePreset } from "@/lib/catalog/genres";
 import { getListenLinks } from "@/lib/catalog/listen";
+import { proxiedCover } from "@/lib/catalog/links";
 import { searchGlobal, type GlobalHit } from "@/lib/catalog/search";
 import { buildRefGenreProfile, isAssemblyLine, rankAlbums, scoreAlbum } from "@/lib/catalog/score";
 import type { CatalogAlbum, ScoredAlbum, WeekCatalog } from "@/lib/catalog/types";
@@ -63,16 +66,34 @@ import {
 } from "@/lib/catalog/weeks";
 import { findLinkedAlbum, hasAlbumTarget, stubAlbumFromLink, type AppSearch } from "@/lib/album-link";
 import { exportCsv, exportIcs, exportJson, exportOfflineHtml } from "@/lib/export";
-import { useT } from "@/lib/i18n";
+import { getDict, useT } from "@/lib/i18n";
+import {
+  displayListName,
+  ensureSavedList,
+  listHasAlbum,
+  resolveListAlbums,
+  SAVED_LIST_ID,
+  savedIdsOf,
+} from "@/lib/catalog/lists";
 import { useGrain, useTaxonomy, watchHeavyPersist } from "@/lib/store";
 import { buildSyncCode, pushSyncCode, type SyncWallItem } from "@/lib/sync";
 import { applyTheme } from "@/lib/themes";
 import { cn } from "@/lib/utils";
+import { isPublicDemo } from "@/lib/demo";
+import { backupNow, maybeRestoreVault, startVaultWatch } from "@/lib/vault";
+import { AddToListMenu } from "./add-to-list-menu";
+import { DemoBanner } from "./demo-banner";
 import { AiSheet } from "./ai-sheet";
 import { AlbumSheet, ListenLinkRow } from "./album-sheet";
+import { CoverHoverAdd, ListGridTile, ListRemoveBtn, SelectCheck, SortableAlbumGrid, SortableAlbumList, type ListedAlbum } from "./list-album-board";
+import { ListImportPanel } from "./list-import-panel";
+import { ListSelectBar } from "./list-select-bar";
 import { PeriodBar, type CustomKind, type Grain } from "./period-bar";
 import { RefSheet } from "./ref-sheet";
 import { Sleeve } from "./sleeve";
+import { TopsterSheet } from "./topster-sheet";
+import { UserListsBar } from "./user-lists-bar";
+import { VaultPanel } from "./vault-panel";
 import { TasteSheet } from "./taste-sheet";
 import { ThemeSheet } from "./theme-sheet";
 import { Badge } from "./ui/badge";
@@ -117,6 +138,9 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
   const [aiOpen, setAiOpen] = useState(false);
   const [rescanBusy, setRescanBusy] = useState(false);
   const [webImportBusy, setWebImportBusy] = useState(false);
+  const [pickedKeys, setPickedKeys] = useState<string[]>([]);
+  const [wallOpen, setWallOpen] = useState(false);
+  const lastPick = useRef<string | null>(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -128,6 +152,10 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
   const skipAssemblyLine = useGrain((s) => s.skipAssemblyLine);
   const types = useGrain((s) => s.types);
   const saved = useGrain((s) => s.saved);
+  const userLists = useGrain((s) => s.userLists);
+  const activeListId = useGrain((s) => s.activeListId);
+  const removeFromList = useGrain((s) => s.removeFromList);
+  const reorderList = useGrain((s) => s.reorderList);
   const hidden = useGrain((s) => s.hidden);
   const sleeves = useGrain((s) => s.sleeves);
   const view = useGrain((s) => s.view);
@@ -164,13 +192,33 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
     let dead = false;
     void Promise.resolve(useGrain.persist.rehydrate())
       .catch(() => undefined)
-      .then(() => {
+      .then(async () => {
         if (dead) return;
         watchHeavyPersist();
         const sources = useGrain.getState().refSources;
-        const next = sources.map((src) => ensureBandcampSource(ensureAppleSource(ensureBuiltinPlaylist(src))));
-        if (next.some((src, i) => src !== sources[i])) {
+        const next = peelForeignPlaylistFromBuiltin(
+          sources.map((src) => ensureBandcampSource(ensureAppleSource(ensureBuiltinPlaylist(src)))),
+        );
+        if (next.length !== sources.length || next.some((src, i) => src !== sources[i])) {
           useGrain.setState({ refSources: next });
+        }
+        const st = useGrain.getState();
+        const lists = ensureSavedList(st.userLists, st.saved);
+        useGrain.setState({
+          userLists: lists,
+          activeListId: lists.some((l) => l.id === st.activeListId) ? st.activeListId : SAVED_LIST_ID,
+          saved: savedIdsOf(lists),
+        });
+        // 公开演示不读写服务器档案(Vercel 只读盘,也不能让访客共享一份 vault)
+        if (!isPublicDemo) {
+          const back = await maybeRestoreVault();
+          if (dead) return;
+          if (back) {
+            const d = getDict(useGrain.getState().lang);
+            toast.success(d.toastVaultRestored(back.lists, back.albums, back.sources));
+            void backupNow();
+          }
+          startVaultWatch();
         }
         setHydrated(true);
       });
@@ -185,6 +233,9 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
     start?: string;
     end?: string;
     items: SyncWallItem[];
+    scanned?: number | null;
+    passed?: number | null;
+    line?: number | null;
   } | null>(null);
 
   useEffect(() => {
@@ -594,6 +645,13 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
   useEffect(() => {
     if (!hydrated) return;
     if (tab === "week" && !searching && !isEarlier && merged.length && bounds && (grain === "week" || grain === "month")) {
+      const scannedReady = Boolean(catalog.data && !catalog.data.partial);
+      let line = 0;
+      if (scannedReady) {
+        for (const a of catalog.data?.albums ?? []) {
+          if (a.inSelectedWeek && isAssemblyLine(a)) line += 1;
+        }
+      }
       lastWall.current = {
         week: mondayOf(bounds.start),
         grain: grain === "month" ? "month" : "week",
@@ -607,6 +665,9 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
           pic: a.coverUrl,
           gold: Boolean(a.gold),
         })),
+        scanned: scannedReady ? catalog.data!.scanned : null,
+        passed: scannedReady ? autoList.length : null,
+        line: scannedReady ? line : null,
       };
     }
     const id = window.setTimeout(() => {
@@ -646,6 +707,8 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
     searching,
     isEarlier,
     hydrated,
+    catalog.data,
+    autoList.length,
   ]);
 
   const listenQuery = useQuery({
@@ -662,7 +725,73 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
     staleTime: 24 * 60 * 60 * 1000,
   });
 
-  const rankedWithListen = useMemo(() => {
+  const activeList = userLists.find((l) => l.id === activeListId) ?? userLists[0];
+  const listedAlbums = useMemo(() => {
+    if (tab !== "saved" || !activeList) return [] as ListedAlbum[];
+    const pool = [...goldBase, ...autoRanked, ...(catalog.data?.albums ?? [])];
+    const blank = { apple: null, spotify: null, netease: null, bandcamp: null };
+    const map = listenQuery.data ?? {};
+    return resolveListAlbums(activeList.entries, pool)
+      .filter(({ album }) => matchQ(album))
+      .map(({ album, key }) => ({
+        ...scoreGold(album),
+        listKey: key,
+        listen: { ...blank, ...album.listen, ...(map[album.id] ?? {}) },
+      }));
+  }, [tab, activeList, goldBase, autoRanked, catalog.data, q, scoreGold, listenQuery.data]);
+
+  const listedKeys = useMemo(() => listedAlbums.map((a) => a.listKey), [listedAlbums]);
+  useEffect(() => {
+    setPickedKeys([]);
+    lastPick.current = null;
+  }, [activeListId, tab]);
+  useEffect(() => {
+    const keep = new Set(listedKeys);
+    setPickedKeys((prev) => {
+      const next = prev.filter((k) => keep.has(k));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [listedKeys]);
+  useEffect(() => {
+    if (tab !== "saved" || pickedKeys.length === 0) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      // 必须挂捕获阶段:Radix 的 Esc 在 document 冒泡时就把弹层关掉并同步重渲染了,
+      // 冒泡阶段再看已经分不清「Esc 是关弹层还是清勾选」。弹层/菜单开着时让给它们。
+      if (document.querySelector('[role="dialog"], [role="menu"]')) return;
+      setPickedKeys([]);
+      lastPick.current = null;
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [tab, pickedKeys.length]);
+
+  function togglePick(key: string, shift: boolean) {
+    const keys = listedKeys;
+    if (shift && lastPick.current) {
+      const a = keys.indexOf(lastPick.current);
+      const b = keys.indexOf(key);
+      if (a >= 0 && b >= 0) {
+        const [lo, hi] = a < b ? [a, b] : [b, a];
+        const range = keys.slice(lo, hi + 1);
+        setPickedKeys((prev) => [...new Set([...prev, ...range])]);
+        lastPick.current = key;
+        return;
+      }
+    }
+    lastPick.current = key;
+    setPickedKeys((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  }
+
+  const pickedAlbums = listedAlbums.filter((a) => pickedKeys.includes(a.listKey));
+
+  /** 专辑墙走列表的完整顺序(不分页);有勾选就只用勾选的那些。 */
+  const wallAlbums = useMemo(() => {
+    const src = pickedKeys.length > 0 ? listedAlbums.filter((a) => pickedKeys.includes(a.listKey)) : listedAlbums;
+    return src.map((a) => ({ artist: a.artist, title: a.title, coverUrl: a.coverUrl, coverUrlLg: a.coverUrlLg }));
+  }, [listedAlbums, pickedKeys]);
+
+  const weekRanked = useMemo(() => {
     const map = listenQuery.data ?? {};
     const blank = { apple: null, spotify: null, netease: null, bandcamp: null };
     return merged.map((a) => ({
@@ -670,6 +799,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
       listen: { ...blank, ...a.listen, ...(map[a.id] ?? {}) },
     }));
   }, [merged, listenQuery.data]);
+  const rankedWithListen = tab === "saved" ? listedAlbums : weekRanked;
 
   useEffect(() => {
     const pending = pendingOpen.current;
@@ -722,7 +852,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
   const hero = tab === "week" && !searching ? rankedWithListen[0] : null;
   useEffect(() => {
     setListShown(LIST_PAGE);
-  }, [bounds?.start, bounds?.end, q, tab, view, grain]);
+  }, [bounds?.start, bounds?.end, q, tab, view, grain, activeListId]);
   const visibleAlbums = rankedWithListen.slice(0, listShown);
   const moreCount = rankedWithListen.length - visibleAlbums.length;
   const weekLabel = formatPeriod(period, lang);
@@ -744,7 +874,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
       ? t.refNameBuiltin
       : t.refNameSources(enabledSources.length);
 
-  /** 当前口味对应的预设(默认 Baseline / 全库 / 自定义)。 */
+  /** 当前口味对应的预设(默认全库 / 自定义)。 */
   const preset = tastePreset(taste);
   const customGenreIds = useMemo(() => genres.filter((g) => g.custom).map((g) => g.id), [genres]);
 
@@ -908,6 +1038,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
 
   return (
     <div className="min-h-dvh">
+      <DemoBanner />
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -1061,8 +1192,9 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
               {t.tabWeek}
             </TabBtn>
             <TabBtn on={tab === "saved"} onClick={() => setTab("saved")}>
-              <Bookmark className="size-3.5" />
-              {t.tabSaved} {saved.length ? saved.length : ""}
+              <List className="size-3.5" />
+              {t.tabSaved}{" "}
+              {userLists.reduce((n, l) => n + l.entries.length, 0) || ""}
             </TabBtn>
           </div>
           <div className="flex flex-1 items-center gap-2 sm:max-w-md sm:justify-end">
@@ -1097,24 +1229,50 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
           </div>
         </div>
 
-        {catalog.isError && !isEarlier ? (
+        {tab === "week" && catalog.isError && !isEarlier ? (
           <p className="mt-8 text-sm text-danger">{t.errCatalog}</p>
         ) : null}
-        {/* SSR 快路径的白卷(partial)在重新拉取期间同样按加载态展示,不误报空周 */}
-        {!isEarlier &&
+        {tab === "week" &&
+        !isEarlier &&
         (!catalog.data || (catalog.data.partial && catalog.isFetching)) &&
         !catalog.isError &&
         goldWeek.length === 0 ? (
           <LoadingState />
         ) : null}
-        {catalog.data?.error && !isEarlier ? (
+        {tab === "week" && catalog.data?.error && !isEarlier ? (
           <p className="mt-8 text-sm text-danger">{t.errCatalogWith(catalog.data.error)}</p>
         ) : null}
 
-        {merged.length === 0 &&
+        {tab === "saved" && activeList ? (
+          <>
+            <UserListsBar lists={userLists} activeId={activeList.id} />
+            <ListImportPanel list={activeList} />
+            <ListSelectBar
+              total={listedAlbums.length}
+              selected={pickedKeys.length}
+              albums={pickedAlbums}
+              excludeListId={activeList.id}
+              onWall={() => setWallOpen(true)}
+              onSelectAll={() => setPickedKeys(listedKeys)}
+              onClear={() => {
+                setPickedKeys([]);
+                lastPick.current = null;
+              }}
+            />
+          </>
+        ) : null}
+
+        {tab === "week" &&
+        merged.length === 0 &&
         (isEarlier || (catalog.data && !(catalog.data.partial && catalog.isFetching))) &&
         !(searching && (globalHits.length > 0 || globalQuery.isFetching)) ? (
           <EmptyState strict={strictTaste} searching={searching} onRelax={() => setStrictTaste(false)} />
+        ) : null}
+        {tab === "saved" && !searching && listedAlbums.length === 0 ? (
+          <div className="mt-10 max-w-md">
+            <h2 className="font-display text-2xl">{t.listEmptyTitle}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{t.listEmptyBody}</p>
+          </div>
         ) : null}
 
         {hero && view === "list" ? (
@@ -1125,13 +1283,18 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
                 "linear-gradient(160deg, color-mix(in srgb, var(--color-raised) 80%, var(--color-surface)), var(--color-surface) 58%)",
             }}
           >
-            <button
-              type="button"
-              onClick={() => setOpenId(hero.id)}
-              className="group grid w-full grid-cols-1 items-end gap-5 text-left sm:grid-cols-[minmax(0,280px)_minmax(0,1fr)]"
-            >
-              <Sleeve album={hero} size="hero" />
-              <div className="px-2 pb-2 sm:px-1 sm:pb-4">
+            <div className="grid w-full grid-cols-1 items-end gap-5 sm:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+              <div className="group relative">
+                <button type="button" onClick={() => setOpenId(hero.id)} className="block w-full text-left">
+                  <Sleeve album={hero} size="hero" />
+                </button>
+                <CoverHoverAdd album={hero} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenId(hero.id)}
+                className="px-2 pb-2 text-left sm:px-1 sm:pb-4"
+              >
                 <p className="font-display text-subtle italic">
                   {hero.gold ? "Curator's pick of the week" : "Head of the week"}
                 </p>
@@ -1155,22 +1318,72 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
                     return <Badge key={id}>{hit ? `${hit.parent} / ${hit.child}` : id}</Badge>;
                   })}
                 </div>
-              </div>
-            </button>
+              </button>
+            </div>
             <div className="mt-3 flex flex-wrap items-center gap-3 px-1">
               {hero.repTrack ? <RepTrackLink track={hero.repTrack} /> : null}
               <ListenLinkRow listen={hero.listen} loading={listenQuery.isFetching && !hero.listen.apple && !hero.listen.spotify && !hero.listen.netease && !hero.listen.bandcamp} />
+              <AddToListMenu album={hero} triggerClassName="h-9 px-3 text-xs">
+                <ListPlus className="size-3.5" />
+                {t.addToList}
+              </AddToListMenu>
             </div>
           </article>
         ) : null}
 
-        {view === "list" ? (
+        {tab === "saved" && view === "list" && listedAlbums.length > 0 ? (
+          <SortableAlbumList
+            albums={visibleAlbums as ListedAlbum[]}
+            enabled={!searching}
+            onReorder={(from, to) => activeList && reorderList(activeList.id, from, to)}
+            renderRow={(album, handle) => (
+              <AlbumRow
+                album={album}
+                rank={visibleAlbums.findIndex((a) => ("listKey" in a ? a.listKey : a.id) === album.listKey) + 1}
+                saved={listHasAlbum(userLists.find((l) => l.id === SAVED_LIST_ID), album) || saved.includes(album.id)}
+                searching={searching}
+                selected={pickedKeys.includes(album.listKey)}
+                dragHandle={handle}
+                childLabel={genreIndex.get(album.inferredGenres[0] ?? "")?.child}
+                onToggleSelect={(shift) => togglePick(album.listKey, shift)}
+                onOpen={() => setOpenId(album.id)}
+                onSave={() => toggleSaved(album)}
+                onHide={
+                  activeList
+                    ? () => removeFromList(activeList.id, album.listKey)
+                    : undefined
+                }
+              />
+            )}
+          />
+        ) : null}
+
+        {tab === "saved" && view === "grid" ? (
+          <SortableAlbumGrid
+            albums={visibleAlbums as ListedAlbum[]}
+            enabled={!searching}
+            onReorder={(from, to) => activeList && reorderList(activeList.id, from, to)}
+            renderTile={(album, handle) => (
+              <ListGridTile
+                album={album}
+                rank={(visibleAlbums as ListedAlbum[]).findIndex((a) => a.listKey === album.listKey) + 1}
+                selected={pickedKeys.includes(album.listKey)}
+                dragHandle={handle}
+                onToggleSelect={(shift) => togglePick(album.listKey, shift)}
+                onOpen={() => setOpenId(album.id)}
+                onRemove={() => activeList && removeFromList(activeList.id, album.listKey)}
+              />
+            )}
+          />
+        ) : null}
+
+        {tab === "week" && view === "list" ? (
           <>
             {goldList.length > 0 && !searching ? (
               <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2">
                 <p className="text-xs tracking-[0.22em] text-subtle">
                   {t.refSectionTitle(refName)}
-                  {tab === "saved" ? t.refSectionCross(goldList.length) : t.refSectionCount(goldList.length)}
+                  {t.refSectionCount(goldList.length)}
                 </p>
                 <button type="button" onClick={() => setRefOpen(true)} className="text-xs text-muted hover:text-fg">
                   {t.refSettings}
@@ -1183,43 +1396,48 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
                 const isFirstAuto = !album.gold && (i === 0 || Boolean(visibleAlbums[i - 1]?.gold));
                 return (
                   <li key={album.id} className="album-row">
-                    {isFirstAuto && goldList.length > 0 && tab === "week" && !searching ? (
+                    {isFirstAuto && goldList.length > 0 && !searching ? (
                       <p className="pt-5 pb-2 text-xs tracking-[0.22em] text-subtle">{t.autoSection}</p>
                     ) : null}
                     <AlbumRow
                       album={album}
                       rank={i + 1}
-                      saved={saved.includes(album.id)}
+                      saved={listHasAlbum(userLists.find((l) => l.id === SAVED_LIST_ID), album) || saved.includes(album.id)}
                       searching={searching}
                       childLabel={genreIndex.get(album.inferredGenres[0] ?? "")?.child}
                       onOpen={() => setOpenId(album.id)}
-                      onSave={() => toggleSaved(album.id)}
-                      onHide={!album.gold && tab === "week" ? () => hideAlbum(album) : undefined}
+                      onSave={() => toggleSaved(album)}
+                      onHide={!album.gold ? () => hideAlbum(album) : undefined}
                     />
                   </li>
                 );
               })}
             </ol>
           </>
-        ) : (
+        ) : null}
+
+        {tab === "week" && view === "grid" ? (
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {visibleAlbums.map((album, i) => (
               <div
                 key={album.id}
                 className="album-tile group relative text-left transition-transform duration-[var(--motion-fast)] ease-[var(--ease-smooth-out)] hover:-translate-y-1"
               >
-                <button type="button" onClick={() => setOpenId(album.id)} className="block w-full text-left">
-                  <div className="relative">
+                <div className="relative">
+                  <button type="button" onClick={() => setOpenId(album.id)} className="block w-full text-left">
                     <Sleeve album={album} size="hero" />
                     <span className="font-display absolute top-2 left-2 rounded-sm bg-bg/75 px-1.5 text-xs italic tabular-nums backdrop-blur-sm">
                       {album.gold ? t.rankPick : i + 1}
                     </span>
-                  </div>
-                  <p className="mt-2.5 truncate text-xs text-muted">{album.artist}</p>
+                  </button>
+                  <CoverHoverAdd album={album} />
+                </div>
+                <button type="button" onClick={() => setOpenId(album.id)} className="mt-2.5 block w-full text-left">
+                  <p className="truncate text-xs text-muted">{album.artist}</p>
                   <p className="truncate text-sm transition-colors group-hover:text-fg">{album.title}</p>
                   {album.repTrack ? <p className="truncate text-[11px] text-subtle">{t.repTrack} · {album.repTrack.name}</p> : null}
                 </button>
-                {!album.gold && tab === "week" ? (
+                {!album.gold ? (
                   <button
                     type="button"
                     aria-label={t.ariaHide}
@@ -1235,7 +1453,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
               </div>
             ))}
           </div>
-        )}
+        ) : null}
 
         {moreCount > 0 ? (
           <div className="mt-5 flex justify-center">
@@ -1310,6 +1528,12 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
       <AlbumSheet album={openAlbum} rank={openRank} open={Boolean(openAlbum)} onOpenChange={(v) => !v && setOpenId(null)} families={families} />
       <TasteSheet open={tasteOpen} onOpenChange={setTasteOpen} />
       <ThemeSheet open={themeOpen} onOpenChange={setThemeOpen} />
+      <TopsterSheet
+        open={wallOpen}
+        onOpenChange={setWallOpen}
+        listName={activeList ? displayListName(activeList, t.listDefaultName) : t.listWall}
+        albums={wallAlbums}
+      />
       <RefSheet open={refOpen} onOpenChange={setRefOpen} />
       <AiSheet open={aiOpen} onOpenChange={setAiOpen} />
 
@@ -1405,6 +1629,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
                   {t.dlIcs}
                 </Button>
               </div>
+              <VaultPanel open={install} />
             </div>
           </ScrollArea>
         </SheetContent>
@@ -1456,7 +1681,7 @@ function GlobalHitRow({ hit, inRef, onAdd }: { hit: GlobalHit; inRef: boolean; o
       <div className="size-12 shrink-0 overflow-hidden rounded-sm bg-raised shadow-[var(--shadow-border)]">
         {hit.coverUrl && !broken ? (
           <img
-            src={hit.coverUrl}
+            src={proxiedCover(hit.coverUrl) ?? undefined}
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
@@ -1476,6 +1701,10 @@ function GlobalHitRow({ hit, inRef, onAdd }: { hit: GlobalHit; inRef: boolean; o
           {hit.date ?? t.unknownDate} · {hit.type} · {hit.source}
         </p>
       </div>
+      <AddToListMenu
+        album={{ id: hit.id, artist: hit.artist, title: hit.title, date: hit.date ?? "", coverUrl: hit.coverUrl }}
+        triggerClassName="size-9"
+      />
       {inRef ? (
         <span className="shrink-0 text-xs text-gold">{t.inRef}</span>
       ) : (
@@ -1512,6 +1741,9 @@ function AlbumRow({
   saved,
   childLabel,
   searching,
+  selected,
+  dragHandle,
+  onToggleSelect,
   onOpen,
   onSave,
   onHide,
@@ -1521,6 +1753,9 @@ function AlbumRow({
   saved: boolean;
   childLabel?: string;
   searching?: boolean;
+  selected?: boolean;
+  dragHandle?: ReactNode;
+  onToggleSelect?: (shift: boolean) => void;
   onOpen: () => void;
   onSave: () => void;
   onHide?: () => void;
@@ -1534,8 +1769,12 @@ function AlbumRow({
         : formatWeek(weekKeyOf(album.date), lang).title
       : null;
   return (
-    <div className="-mx-2 rounded-lg px-2 py-3 transition-colors duration-[var(--motion-quick)] hover:bg-surface/70 sm:-mx-3 sm:px-3">
+    <div className={cn("-mx-2 rounded-lg px-2 py-3 transition-colors duration-[var(--motion-quick)] hover:bg-surface/70 sm:-mx-3 sm:px-3", selected && "bg-raised/80")}>
       <div className="flex items-center gap-3 sm:gap-4">
+        {onToggleSelect ? (
+          <SelectCheck checked={Boolean(selected)} label={t.ariaSelectAlbum(album.title)} onToggle={onToggleSelect} />
+        ) : null}
+        {dragHandle}
         <button type="button" onClick={onOpen} className="group flex min-w-0 flex-1 items-center gap-3 text-left sm:gap-4">
           <span className="font-display w-7 shrink-0 text-right text-sm italic text-subtle tabular-nums transition-colors group-hover:text-muted sm:w-8">
             {album.gold ? t.rankPick : rank}
@@ -1555,13 +1794,18 @@ function AlbumRow({
             {album.gold ? <span className="text-sm text-gold">{t.scorePick}</span> : album.scores.composite}
           </span>
         </button>
+        <AddToListMenu album={album} triggerClassName="size-9" />
         <Button variant="ghost" size="icon-sm" aria-label={t.ariaSave} onClick={onSave}>
           {saved ? <Bookmark className="size-4 fill-current" /> : <Bookmark className="size-4" />}
         </Button>
         {onHide ? (
+          dragHandle ? (
+            <ListRemoveBtn onClick={onHide} />
+          ) : (
           <Button variant="ghost" size="icon-sm" aria-label={t.ariaHide} className="text-subtle hover:text-fg" onClick={onHide}>
             <EyeOff className="size-4" />
           </Button>
+          )
         ) : null}
       </div>
       {album.repTrack || album.listen.apple || album.listen.spotify || album.listen.netease || album.listen.bandcamp ? (

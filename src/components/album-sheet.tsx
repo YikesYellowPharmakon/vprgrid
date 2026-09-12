@@ -1,4 +1,4 @@
-import { Bookmark, BookmarkCheck, EyeOff, ExternalLink, ScanSearch, Sparkles, Star } from "lucide-react";
+import { Bookmark, BookmarkCheck, EyeOff, ExternalLink, ListPlus, ScanSearch, Sparkles, Star } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { displayReleaseDate } from "@/lib/catalog/release-date";
 import { getListenLinks } from "@/lib/catalog/listen";
 import type { GenreFamily } from "@/lib/catalog/genres";
 import type { ListenLinks, ScoredAlbum } from "@/lib/catalog/types";
+import { listHasAlbum, SAVED_LIST_ID } from "@/lib/catalog/lists";
 import { useT } from "@/lib/i18n";
 import { useGrain } from "@/lib/store";
 import { aiOverrideOf } from "./ai-sheet";
@@ -16,6 +17,8 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Sheet, SheetContent } from "./ui/sheet";
+import { AddToListMenu } from "./add-to-list-menu";
+import { CoverHoverAdd } from "./list-album-board";
 import { ArtistMusicMap } from "./music-map";
 import { Sleeve } from "./sleeve";
 
@@ -84,6 +87,7 @@ export function AlbumSheet({
   families: GenreFamily[];
 }) {
   const saved = useGrain((s) => s.saved);
+  const userLists = useGrain((s) => s.userLists);
   const aiConf = useGrain((s) => s.aiConf);
   const hidden = useGrain((s) => s.hidden);
   const sleeves = useGrain((s) => s.sleeves);
@@ -111,6 +115,7 @@ export function AlbumSheet({
   });
 
   if (!album) return null;
+  const isSaved = listHasAlbum(userLists.find((l) => l.id === SAVED_LIST_ID), album) || saved.includes(album.id);
   const reading = sleeves[album.id];
   const artistNote = artistNotes[album.artist.trim().toLowerCase()];
   const noteEmpty =
@@ -185,7 +190,10 @@ export function AlbumSheet({
               {album.gold ? t.detailPickTag : t.detailNo(rank)}
             </p>
             <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-5 sm:grid-cols-[160px_minmax(0,1fr)]">
-              <Sleeve album={album} size="lg" className="w-40" />
+              <div className="group relative w-40">
+                <Sleeve album={album} size="lg" className="w-40" />
+                <CoverHoverAdd album={album} />
+              </div>
               <div className="min-w-0">
                 <p className="text-sm text-muted">{album.artist}</p>
                 <h2 className="font-display mt-1 text-2xl leading-tight font-medium tracking-[-0.03em]">
@@ -304,12 +312,16 @@ export function AlbumSheet({
             <div className="mt-6 flex flex-wrap gap-2">
               <Button
                 size="sm"
-                variant={saved.includes(album.id) ? "default" : "secondary"}
-                onClick={() => toggleSaved(album.id)}
+                variant={isSaved ? "default" : "secondary"}
+                onClick={() => toggleSaved(album)}
               >
-                {saved.includes(album.id) ? <BookmarkCheck /> : <Bookmark />}
-                {saved.includes(album.id) ? t.btnSaved : t.btnSave}
+                {isSaved ? <BookmarkCheck /> : <Bookmark />}
+                {isSaved ? t.btnSaved : t.btnSave}
               </Button>
+              <AddToListMenu album={album} triggerClassName="h-9 px-3 text-xs">
+                <ListPlus className="size-3.5" />
+                {t.addToList}
+              </AddToListMenu>
               <Button size="sm" variant="secondary" onClick={() => onAnalyze()}>
                 <ScanSearch />
                 {t.btnReadCover}

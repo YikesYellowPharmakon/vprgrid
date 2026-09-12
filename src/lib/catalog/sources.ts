@@ -4,6 +4,7 @@
  * 所有开启的源合并去重后形成参考池,品味推断与艺人加权基于合并池。
  * 本文件只含客户端安全的纯函数(类型、合并、粘贴解析、导入桥编解码)。
  */
+import { isPublicDemo } from "../demo";
 import { DEFAULT_REF_ENTRIES, normalizeKey, syntheticId, type GoldEntry } from "./gold";
 import { inferEntryDate, neutralizeGuessedDates } from "./release-date";
 
@@ -47,6 +48,17 @@ export const BUILTIN_PLAYLIST_ID = "17965976957";
 export const BUILTIN_PLAYLIST_URL = `https://music.163.com/#/playlist?id=${BUILTIN_PLAYLIST_ID}`;
 
 export function makeBuiltinSource(enabled = true): RefSource {
+  if (isPublicDemo) {
+    return {
+      id: BUILTIN_SOURCE_ID,
+      kind: "builtin",
+      label: "参考池",
+      detail: "演示 · 空，自己添加订阅",
+      enabled,
+      autoSync: false,
+      entries: [],
+    };
+  }
   return {
     id: BUILTIN_SOURCE_ID,
     kind: "builtin",
@@ -62,10 +74,45 @@ export function makeBuiltinSource(enabled = true): RefSource {
 /** 给旧存档补上内置歌单链接,并默认打开自动刷新。 */
 export function ensureBuiltinPlaylist(src: RefSource): RefSource {
   if (src.kind !== "builtin") return src;
+  if (isPublicDemo) {
+    if (!src.url && src.autoSync === false) return src;
+    return { ...src, url: undefined, autoSync: false };
+  }
   const url = src.url || BUILTIN_PLAYLIST_URL;
   const autoSync = src.url ? src.autoSync : true;
   if (src.url === url && src.autoSync === autoSync) return src;
   return { ...src, url, autoSync };
+}
+
+/**
+ * 旧 bug 会把别的网易云歌单并进内置源并改掉链接。
+ * 若内置源现在指向另一份歌单,剥出来单独建源,内置改回默认亲选。
+ */
+export function peelForeignPlaylistFromBuiltin(sources: RefSource[]): RefSource[] {
+  const builtin = sources.find((s) => s.id === BUILTIN_SOURCE_ID);
+  if (!builtin) return sources;
+  const id = neteasePlaylistId(builtin.url || "");
+  if (!id || id === BUILTIN_PLAYLIST_ID) return sources;
+  const url = `https://music.163.com/#/playlist?id=${id}`;
+  const already = sources.some(
+    (s) => s.id !== BUILTIN_SOURCE_ID && s.url && normalizeRefUrl(s.url) === normalizeRefUrl(url),
+  );
+  const restored = makeBuiltinSource(builtin.enabled);
+  const rest = sources.filter((s) => s.id !== BUILTIN_SOURCE_ID);
+  if (already) return [restored, ...rest];
+  const peeled: RefSource = {
+    id: newSourceId("netease"),
+    kind: "netease",
+    label: builtin.label.trim() && builtin.label !== "内置默认参考" ? builtin.label : `歌单 ${id}`,
+    url,
+    detail: builtin.detail || "网易云歌单",
+    enabled: true,
+    autoSync: true,
+    entries: builtin.entries ?? [],
+    excluded: builtin.excluded,
+    lastSync: builtin.lastSync,
+  };
+  return [restored, peeled, ...rest];
 }
 
 /** 把网易云歌单并进内置源:旧清单保留,只追加新专。 */
@@ -147,16 +194,30 @@ export function newSourceId(kind: RefSourceKind): string {
   return `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-/** 去掉刷新参数与末尾斜杠,用来对上「同一条用户页」。保留路径里的年份/筛选段。 */
+/** 网易云歌单 id:写在 hash(#/playlist?id=)或 query 里,光看 pathname 会把所有歌单收成同一条。 */
+export function neteasePlaylistId(url: string): string | null {
+  const raw = url.trim();
+  if (/^\d{5,}$/.test(raw)) return raw;
+  return raw.match(/[?&#]id=(\d+)/i)?.[1] ?? null;
+}
+
+/** 用来判断「是不是同一个订阅」。保留路径年份/筛选;网易云按歌单 id 对齐。 */
 export function normalizeRefUrl(url: string): string {
+  const raw = url.trim();
+  if (/^\d{5,}$/.test(raw) || /music\.163\.com|163cn\.tv/i.test(raw)) {
+    const id = neteasePlaylistId(raw);
+    if (id) return `https://music.163.com/playlist?id=${id}`;
+  }
   try {
-    const u = new URL(url.trim());
-    u.hash = "";
+    const u = new URL(raw);
     u.searchParams.delete("vprrefresh");
     const path = u.pathname.replace(/\/+$/, "");
-    return `${u.protocol}//${u.host}${path}`.toLowerCase();
+    const hash = u.hash.startsWith("#/") ? u.hash.replace(/\/+$/, "") : "";
+    if (!hash) u.hash = "";
+    const search = u.searchParams.toString();
+    return `${u.protocol}//${u.host}${path}${search ? `?${search}` : ""}${hash}`.toLowerCase();
   } catch {
-    return url.trim().replace(/[?#].*$/, "").replace(/\/+$/, "").toLowerCase();
+    return raw.replace(/\/+$/, "").toLowerCase();
   }
 }
 

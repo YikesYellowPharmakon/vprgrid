@@ -66,8 +66,8 @@ const nt = await page.evaluate(() => {
   const cs = getComputedStyle(wb);
   return {
     theme: document.documentElement.dataset.theme,
-    clock: document.getElementById("clock").textContent,
-    date: document.getElementById("wdate").textContent,
+    pulse: document.getElementById("pulsemain").textContent,
+    pulseSub: document.getElementById("pulsesub").textContent,
     newsItems: document.querySelectorAll("#newslist li").length,
     newsIsDim: Boolean(document.querySelector("#newslist .newsdim")),
     blur: cs.backdropFilter,
@@ -76,7 +76,7 @@ const nt = await page.evaluate(() => {
   };
 });
 check("直连同步生效:新标签页主题 = y2k(未粘同步码)", nt.theme === "y2k", nt.theme);
-check("时钟在走", /\d{1,2}:\d{2}/.test(nt.clock), `${nt.clock} / ${nt.date}`);
+check("发片脉搏有内容", /\S/.test(nt.pulse), `${nt.pulse} / ${nt.pulseSub}`);
 check("音乐快讯已渲染(或显示占位)", nt.newsItems > 0, `items=${nt.newsItems} dim=${nt.newsIsDim}`);
 check("大框毛玻璃(blur ≥ 20px)", /blur\(2\dpx\)/.test(nt.blur), nt.blur);
 check("默认墙宽 800 且与搜索栏等宽", Math.abs(nt.wallW - 800) <= 4 && Math.abs(nt.wallW - nt.searchW) <= 4, `wall=${nt.wallW} search=${nt.searchW}`);

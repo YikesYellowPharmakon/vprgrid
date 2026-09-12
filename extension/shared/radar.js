@@ -1,6 +1,8 @@
 /* VprGrid.SYS 雷达墙:新标签页与弹窗共用。拉取应用的 /api/radar,
    本地合并同步码里的参考池,复现应用主题(配色 + 背景图画),支持中英切换。 */
 
+import { loadGenres, pickGenre } from "./genres.js";
+
 const DEFAULT_BASE = "http://127.0.0.1:8080";
 const APP_CANDIDATES = [
   "http://127.0.0.1:8080",
@@ -111,11 +113,24 @@ const I18N = {
     btnReloadTitle: "重新拉取这一周",
     newsHead: "音乐快讯",
     newsFail: "快讯暂时拉不到",
+    statsHead: "本期",
+    statRefLab: "参考",
+    statRefN: (n) => `${n} 张`,
+    statPoolLab: "扫描池",
+    statPassLab: "本期过筛",
+    statLineLab: "流水线",
+    statWait: "…",
+    genreHead: "风格介绍",
+    genreKey: "代表",
+    genrePrev: "回上一个风格",
+    genreNext: "换一个风格",
     sizeTitle: "拖左右边或滑杆调整宽度(保持居中)",
     sizeHTitle: "拖动调整封面高度(会记住)",
     sizeYTitle: "拖顶栏上下移动大框(会记住)",
     sizeSTitle: "拖底边拉高 / 收起大框(会记住)",
     sizeCwTitle: "拖动调整封面宽度(会记住;不动则保持正方形)",
+    resetLayout: "默认",
+    resetLayoutTitle: "恢复默认布局:墙宽、封面大小、上下位置都回到初始值",
     langBtn: "EN",
     langTitle: "Switch to English",
     appDownTitle: "完整应用没有打开",
@@ -168,11 +183,24 @@ const I18N = {
     btnReloadTitle: "Reload this week",
     newsHead: "Music news",
     newsFail: "News unavailable right now",
+    statsHead: "This period",
+    statRefLab: "Picks",
+    statRefN: (n) => String(n),
+    statPoolLab: "Pool",
+    statPassLab: "Passed",
+    statLineLab: "Assembly",
+    statWait: "…",
+    genreHead: "Genre notes",
+    genreKey: "Try",
+    genrePrev: "Previous genre",
+    genreNext: "Another genre",
     sizeTitle: "Drag the side edges or slider to resize width (stays centered)",
     sizeHTitle: "Drag to adjust cover height (remembered)",
     sizeYTitle: "Drag the top bar to move the box (remembered)",
     sizeSTitle: "Drag the bottom edge to stretch the box (remembered)",
     sizeCwTitle: "Drag to adjust cover width (remembered; untouched = square)",
+    resetLayout: "Reset",
+    resetLayoutTitle: "Restore the default layout: wall width, cover size and vertical offset",
     langBtn: "中",
     langTitle: "切换为中文",
     appDownTitle: "The full app isn’t running",
@@ -481,7 +509,18 @@ function wallToRadarData(sync, state) {
     };
     (item.gold ? reference : auto).push(item);
   }
-  return { week: wall.week || state.week, start, end, reference, auto, fromWall: true };
+  const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  return {
+    week: wall.week || state.week,
+    start,
+    end,
+    reference,
+    auto,
+    fromWall: true,
+    scanned: num(wall.scanned),
+    passed: num(wall.passed),
+    line: num(wall.line),
+  };
 }
 
 /** 同步码里的参考池按日期切开,换期时立刻上墙,不用等目录算完。 */
@@ -507,7 +546,7 @@ function goldFromSync(state) {
   }
   if (!reference.length) return null;
   const { start, end } = periodOf(state);
-  return { week: state.week, start, end, reference, auto: [], fromSyncGold: true };
+  return { week: state.week, start, end, reference, auto: [], fromSyncGold: true, scanned: null, passed: null, line: null };
 }
 
 function neighborViews(state) {
@@ -945,6 +984,32 @@ function tile(item) {
   return t;
 }
 
+function finiteNum(v) {
+  return typeof v === "number" && Number.isFinite(v);
+}
+
+/** 左上本期统计:参考张数随时有;扫描池 / 过筛 / 流水线没扫过就写省略号。 */
+function renderStats(state, data) {
+  const box = document.getElementById("statsw");
+  if (!box) return;
+  const t = state.t;
+  const set = (id, text) => {
+    const n = document.getElementById(id);
+    if (n) n.textContent = text;
+  };
+  const gold = Array.isArray(data?.reference) ? data.reference.length : 0;
+  const waiting = !data || data.partial || data.fromSyncGold || !finiteNum(data.scanned);
+  set("statshead", t.statsHead);
+  set("statreflab", t.statRefLab);
+  set("statref", t.statRefN(gold));
+  set("statpoollab", t.statPoolLab);
+  set("statpool", waiting ? t.statWait : String(data.scanned));
+  set("statpasslab", t.statPassLab);
+  set("statpass", waiting ? t.statWait : String(finiteNum(data.passed) ? data.passed : (data.auto || []).length));
+  set("statlinelab", t.statLineLab);
+  set("statline", waiting ? t.statWait : String(finiteNum(data.line) ? data.line : 0));
+}
+
 /** 把一份雷达响应画上墙:合并参考池、去重、渲染、更新状态栏。 */
 function renderWall(state, data) {
   const t = state.t;
@@ -958,6 +1023,8 @@ function renderWall(state, data) {
   const auto = (data.auto || []).filter((a) => !goldKeys.has(`${normKey(a.artist)}||${normKey(a.title)}`));
   const cap = state.grain === "month" ? 48 : 80;
   const items = [...gold, ...auto].slice(0, cap);
+  state._statsData = { ...data, reference: gold, auto };
+  renderStats(state, state._statsData);
   const ident = `${periodOf(state).key}\n${items.map((i) => `${normKey(i.artist)}\t${normKey(i.title)}`).join("\n")}`;
   if (state._wallIdent === ident && grid.childElementCount && !grid.querySelector(".skeleton")) {
     setStatusText(status, t.status(gold.length, auto.length, Boolean(state.sync)));
@@ -991,15 +1058,21 @@ async function loadWeek(state, opts = {}) {
   const periodKey = periodOf(state).key;
   const periodChanged = state._shownPeriod !== periodKey;
   state._shownPeriod = periodKey;
+  if (periodChanged) {
+    const goldSnap = goldFromSync(state);
+    renderStats(state, goldSnap || { reference: [], fromSyncGold: true });
+  }
 
   const snap = wallToRadarData(state.sync, state);
   if (snap && !force) {
     state._waiting = false;
-    state._loadBusy = false;
     renderWall(state, snap);
     void writePeriodWall(periodKey, taste, snap);
-    void prefetchNeighbors(state);
-    return;
+    if (finiteNum(snap.scanned)) {
+      state._loadBusy = false;
+      void prefetchNeighbors(state);
+      return;
+    }
   }
 
   const gold = goldFromSync(state);
@@ -1101,70 +1174,88 @@ function morebox(rest, state, t) {
   return box;
 }
 
-/* ---------- 小组件:时钟 / 天气 / 音乐快讯(只在新标签页存在对应节点) ---------- */
+/* ---------- 小组件:音乐快讯 / 风格介绍(只在新标签页存在对应节点) ---------- */
 
-const WMO = [
-  [[0], "☀️", "晴", "Clear"],
-  [[1, 2], "⛅", "多云", "Partly cloudy"],
-  [[3], "☁️", "阴", "Overcast"],
-  [[45, 48], "🌫️", "雾", "Fog"],
-  [[51, 53, 55, 56, 57], "🌦️", "毛毛雨", "Drizzle"],
-  [[61, 63, 65, 66, 67], "🌧️", "雨", "Rain"],
-  [[71, 73, 75, 77, 85, 86], "❄️", "雪", "Snow"],
-  [[80, 81, 82], "🌦️", "阵雨", "Showers"],
-  [[95, 96, 99], "⛈️", "雷雨", "Thunderstorm"],
-];
+/* ---------- 风格卡片:抽签 + 左右翻 ---------- */
 
-function startClock(state) {
-  const clock = document.getElementById("clock");
-  const date = document.getElementById("wdate");
-  if (!clock || !date) return;
-  const tick = () => {
-    const now = new Date();
-    const locale = state.lang === "zh" ? "zh-CN" : "en-US";
-    clock.textContent = now.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false });
-    date.textContent = now.toLocaleDateString(locale, { month: "long", day: "numeric", weekday: "long" });
-  };
-  tick();
-  setInterval(tick, 15000);
-  state.tickClock = tick;
-}
-
-function renderWeather(state) {
-  const box = document.getElementById("weatherw");
-  if (!box || !state.wx) return;
-  const m = WMO.find(([codes]) => codes.includes(state.wx.code)) ?? WMO[0];
-  box.hidden = false;
-  document.getElementById("wicon").textContent = m[1];
-  document.getElementById("wtemp").textContent = `${state.wx.temp}°`;
-  document.getElementById("wdesc").textContent = state.lang === "zh" ? m[2] : m[3];
-}
-
-async function loadWeather(state) {
-  const box = document.getElementById("weatherw");
-  if (!box) return;
+async function readGenreSeen() {
   try {
-    const cached = (await chrome.storage.local.get("wx")).wx;
-    let wx = cached && Date.now() - cached.t < 30 * 60000 ? cached : null;
-    if (!wx) {
-      // MV3 插件页没有定位权限提示,用 IP 粗定位(城市级,够天气用)
-      const geo = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(7000) }).then((r) => r.json());
-      const lat = Number(geo.latitude);
-      const lon = Number(geo.longitude);
-      if (!Number.isFinite(lat) || !Number.isFinite(lon)) throw new Error("no geo");
-      const r = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=temperature_2m,weather_code`,
-        { signal: AbortSignal.timeout(8000) },
-      );
-      const j = await r.json();
-      wx = { t: Date.now(), temp: Math.round(j.current.temperature_2m), code: j.current.weather_code };
-      void chrome.storage.local.set({ wx });
-    }
-    state.wx = wx;
-    renderWeather(state);
+    const v = (await chrome.storage.local.get("genreSeen")).genreSeen;
+    return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
   } catch {
-    box.hidden = true; // 拿不到定位/天气就藏起来,不摆错误
+    return [];
   }
+}
+
+/** 看过的记进本地:抽签只从没看过的里挑,整库看完就清空重来。 */
+function rememberGenre(state, id) {
+  const next = [...state.genreSeen.filter((x) => x !== id), id];
+  state.genreSeen = next.length >= state.genres.length ? [] : next;
+  void chrome.storage.local.set({ genreSeen: state.genreSeen });
+}
+
+function paintGenre(state) {
+  const g = state.genreTrail?.[state.genreAt];
+  if (!g) return;
+  const t = state.t;
+  const zh = state.lang === "zh";
+  const set = (id, text) => {
+    const n = document.getElementById(id);
+    if (n) n.textContent = text;
+  };
+  set("genrehead", t.genreHead);
+  set("genrename", zh && g.zh !== g.en ? `${g.zh} · ${g.en}` : g.en);
+  set("genrewhere", zh ? g.whereZh : g.whereEn);
+  const desc = zh ? g.zhDesc : g.enDesc;
+  const descNode = document.getElementById("genredesc");
+  if (descNode) {
+    descNode.textContent = desc;
+    descNode.title = desc; // 卡片只放三行,悬停看全文
+  }
+  set("genrekey", g.key ? `${t.genreKey} · ${g.key}` : "");
+  const prev = document.getElementById("genreprev");
+  const next = document.getElementById("genrenext");
+  if (prev) {
+    prev.disabled = state.genreAt <= 0;
+    prev.title = t.genrePrev;
+  }
+  if (next) next.title = t.genreNext;
+}
+
+/** 往前翻已经看过的那几条,翻到头再抽新的。 */
+function advanceGenre(state) {
+  if (state.genreAt < state.genreTrail.length - 1) {
+    state.genreAt += 1;
+    paintGenre(state);
+    return;
+  }
+  const g = pickGenre(state.genres, state.genreSeen);
+  if (!g) return;
+  state.genreTrail.push(g);
+  state.genreAt = state.genreTrail.length - 1;
+  rememberGenre(state, g.id);
+  paintGenre(state);
+}
+
+async function initGenreCard(state) {
+  const box = document.getElementById("genrew");
+  if (!box) return;
+  const [genres, seen] = await Promise.all([loadGenres(), readGenreSeen()]);
+  state.genres = genres;
+  if (!genres.length) {
+    box.hidden = true; // 数据没加载上就别摆空卡片
+    return;
+  }
+  state.genreSeen = seen;
+  state.genreTrail = [];
+  state.genreAt = -1;
+  advanceGenre(state);
+  document.getElementById("genrenext")?.addEventListener("click", () => advanceGenre(state));
+  document.getElementById("genreprev")?.addEventListener("click", () => {
+    if (state.genreAt <= 0) return;
+    state.genreAt -= 1;
+    paintGenre(state);
+  });
 }
 
 async function loadNews(state) {
@@ -1234,11 +1325,27 @@ function applyStaticLang(t) {
     n.title = t.btnReloadTitle;
   });
   set("newshead", (n) => (n.textContent = t.newsHead));
+  set("statshead", (n) => (n.textContent = t.statsHead));
+  set("statreflab", (n) => (n.textContent = t.statRefLab));
+  set("statpoollab", (n) => (n.textContent = t.statPoolLab));
+  set("statpasslab", (n) => (n.textContent = t.statPassLab));
+  set("statlinelab", (n) => (n.textContent = t.statLineLab));
+  set("genrehead", (n) => (n.textContent = t.genreHead));
+  set("genreprev", (n) => {
+    n.title = t.genrePrev;
+    n.setAttribute("aria-label", t.genrePrev);
+  });
+  set("genrenext", (n) => {
+    n.title = t.genreNext;
+    n.setAttribute("aria-label", t.genreNext);
+  });
   set("wallsize", (n) => (n.title = t.sizeTitle));
   set("wallhsize", (n) => (n.title = t.sizeHTitle));
   set("wallpos", (n) => (n.title = t.sizeYTitle));
   set("wallstretch", (n) => (n.title = t.sizeSTitle));
   set("coverwsize", (n) => (n.title = t.sizeCwTitle));
+  set("resetlayout", (n) => (n.title = t.resetLayoutTitle));
+  set("resetlayoutlabel", (n) => (n.textContent = t.resetLayout));
   set("langtoggle", (n) => {
     n.title = t.langTitle;
     n.textContent = t.langBtn;
@@ -1350,24 +1457,27 @@ export async function initRadar() {
   }
 
   // 小组件 + 墙宽(只在新标签页有对应节点)
-  startClock(state);
-  void loadWeather(state);
+  renderStats(state, state._statsData);
+  void initGenreCard(state);
   void loadNews(state);
   const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
   const wallLimits = () => {
     const vw = window.innerWidth || 1200;
     const vh = window.innerHeight || 800;
     return {
-      wMin: Math.min(600, Math.round(vw * 0.7)),
+      // 宽度下限守住 760px:再窄封面条就挤成一团(窗口本身很窄时才跟着让步)
+      wMin: Math.min(760, Math.round(vw * 0.9)),
       wMax: Math.min(1080, Math.round(vw * 0.92)),
-      yMin: -Math.round(Math.min(72, vh * 0.08)),
-      yMax: Math.round(Math.min(140, vh * 0.16)),
+      // 上下移动只在小幅内微调,别把墙推到搜索栏上或掉出视口
+      yMin: -Math.round(Math.min(44, vh * 0.05)),
+      yMax: Math.round(Math.min(88, vh * 0.1)),
       sMin: 0,
       sMax: Math.round(Math.min(220, vh * 0.22)),
       hMin: 96,
       hMax: 176,
     };
   };
+  const DEFAULT_LAYOUT = { wallW: 920, wallH: 128, wallY: 0, wallS: 0, coverW: 0 };
   const persistWall = () => {
     void chrome.storage.local.set({
       wallW: state.wallW,
@@ -1388,7 +1498,7 @@ export async function initRadar() {
     const shownH = clamp(prefH, lim.hMin, lim.hMax);
     const shownY = clamp(prefY, lim.yMin, lim.yMax);
     const shownS = clamp(prefS, lim.sMin, lim.sMax);
-    document.body.style.setProperty("--wall-w", `${prefW}px`);
+    document.body.style.setProperty("--wall-w", `${shownW}px`);
     document.body.style.setProperty("--wall-h", `${shownH}px`);
     document.body.style.setProperty("--wall-y", `${shownY}px`);
     document.body.style.setProperty("--wall-s", `${shownS}px`);
@@ -1430,6 +1540,14 @@ export async function initRadar() {
   wireBoxSizer("wallhsize", "wallH");
   wireBoxSizer("wallpos", "wallY");
   wireBoxSizer("wallstretch", "wallS");
+  document.getElementById("resetlayout")?.addEventListener("click", () => {
+    Object.assign(state, DEFAULT_LAYOUT);
+    document.body.style.removeProperty("--cover-w");
+    const cw = document.getElementById("coverwsize");
+    if (cw) cw.value = String(DEFAULT_LAYOUT.wallH);
+    applyWallBox();
+    void chrome.storage.local.set(DEFAULT_LAYOUT);
+  });
   {
     const box = document.getElementById("wallbox");
     if (box && document.body.classList.contains("newtab")) {
@@ -1445,10 +1563,11 @@ export async function initRadar() {
         const startPos = clamp(Number(state.wallY) || 0, lim0.yMin, lim0.yMax);
         document.body.classList.add("wall-dragging");
         const move = (e) => {
-          if (mode === "e") state.wallW = startW + (e.clientX - startX);
-          else if (mode === "w") state.wallW = startW - (e.clientX - startX);
-          else if (mode === "s") state.wallS = startS + (e.clientY - startY);
-          else state.wallY = startPos + (e.clientY - startY);
+          // 拖到边界就停住,不让宽度/位置越界后再被显示端悄悄夹回来
+          if (mode === "e") state.wallW = clamp(startW + (e.clientX - startX), lim0.wMin, lim0.wMax);
+          else if (mode === "w") state.wallW = clamp(startW - (e.clientX - startX), lim0.wMin, lim0.wMax);
+          else if (mode === "s") state.wallS = clamp(startS + (e.clientY - startY), lim0.sMin, lim0.sMax);
+          else state.wallY = clamp(startPos + (e.clientY - startY), lim0.yMin, lim0.yMax);
           applyWallBox();
         };
         const end = () => {
@@ -1652,8 +1771,8 @@ export async function initRadar() {
       void chrome.storage.local.set({ extLang: state.lang });
       applyStaticLang(state.t);
       applyGrainChrome(state);
-      state.tickClock?.();
-      renderWeather(state);
+      paintGenre(state);
+      renderStats(state, state._statsData);
       refreshModeBtn();
       void loadWeek(state);
     });

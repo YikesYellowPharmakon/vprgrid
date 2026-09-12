@@ -1,5 +1,6 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -145,6 +146,24 @@ function authPopupPlugin(): Plugin {
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
+const publicDemo = process.env.VITE_VPRGRID_DEMO === "1" || process.env.VITE_VPRGRID_DEMO === "true";
+const emptyGold = fileURLToPath(new URL("./src/lib/catalog/gold-empty.json", import.meta.url));
+
+/** 公开演示构建：把亲选清单换成空数组，避免打进访客包。 */
+function demoGoldPlugin(): Plugin {
+  return {
+    name: "vprgrid-demo-gold",
+    enforce: "pre",
+    resolveId(id) {
+      if (!publicDemo) return null;
+      if (id === "./gold-2026.json" || id.endsWith("/gold-2026.json") || id.endsWith("gold-2026.json")) {
+        return emptyGold;
+      }
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({ command, isPreview }) => ({
   server: {
     host: "0.0.0.0",
@@ -161,6 +180,7 @@ export default defineConfig(({ command, isPreview }) => ({
   },
   resolve: { tsconfigPaths: true },
   plugins: [
+    demoGoldPlugin(),
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
     authPopupPlugin(),

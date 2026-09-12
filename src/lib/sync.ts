@@ -35,6 +35,9 @@ export type SyncExtra = {
     start?: string;
     end?: string;
     items: SyncWallItem[];
+    scanned?: number | null;
+    passed?: number | null;
+    line?: number | null;
     at?: string;
   };
 };

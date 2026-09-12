@@ -2,10 +2,12 @@
  * 参考池(歌单/艺人/手动专辑)走 IndexedDB,其余小设置仍在 localStorage。
  * 万级歌单塞进 localStorage 会超配额,persist 静默失败,再次打开就只剩内置源。
  */
+import { isPublicDemo } from "./demo";
+
 const IDB_NAME = "vprgrid-grain";
 const IDB_STORE = "kv";
-const HEAVY_KEY = "grain-friday-heavy";
-const HEAVY_FIELDS = ["refSources", "artistNotes", "sleeves"] as const;
+const HEAVY_KEY = isPublicDemo ? "vprgrid-demo-heavy" : "grain-friday-heavy";
+const HEAVY_FIELDS = ["refSources", "artistNotes", "sleeves", "userLists"] as const;
 
 type PersistBlob = { state?: Record<string, unknown>; version?: number };
 
@@ -92,7 +94,7 @@ export const grainStorage = {
       for (const k of HEAVY_FIELDS) {
         if (heavy && k in heavy) state[k] = heavy[k];
       }
-      return JSON.stringify({ state, version: light?.version ?? 9 });
+      return JSON.stringify({ state, version: light?.version ?? 13 });
     } finally {
       hydratedOnce = true;
     }
@@ -143,7 +145,7 @@ export const grainStorage = {
   },
 };
 
-/** 参考池 / 艺人笔记 / 封面识别只在这三份引用变化时写入 IndexedDB。 */
+/** 参考池 / 艺人笔记 / 封面识别 / 用户列表只在这几份引用变化时写入 IndexedDB。 */
 export function writeHeavy(heavy: Record<(typeof HEAVY_FIELDS)[number], unknown>): Promise<void> {
   if (typeof window === "undefined" || !hydratedOnce) return Promise.resolve();
   return idbSet(HEAVY_KEY, heavy).catch(() => undefined);

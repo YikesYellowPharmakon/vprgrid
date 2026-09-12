@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { proxiedCover } from "@/lib/catalog/links";
 import { cn } from "@/lib/utils";
 import type { CatalogAlbum } from "@/lib/catalog/types";
 
@@ -22,8 +23,13 @@ export function Sleeve({
   className?: string;
 }) {
   const [broken, setBroken] = useState(false);
-  const show = album.coverUrl && !broken;
-  const src = size === "hero" || size === "lg" ? album.coverUrlLg || album.coverUrl : album.coverUrl;
+  const [loaded, setLoaded] = useState(false);
+  const big = size === "hero" || size === "lg";
+  const small = proxiedCover(album.coverUrl);
+  const src = proxiedCover(big ? album.coverUrlLg || album.coverUrl : album.coverUrl);
+  const show = Boolean(src) && !broken;
+  /** 大图版本另算一次回源,而列表用的小图往往已在缓存里:先垫小图,大图到了再淡入。 */
+  const preview = big && small && small !== src ? small : null;
   const box = {
     sm: "size-16 rounded-sm",
     md: "size-[72px] rounded-sm",
@@ -40,32 +46,41 @@ export function Sleeve({
         className,
       )}
     >
+      {/* 首字母封面垫底:封面还在路上或压根没有时,格子都不会是一块空灰 */}
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{
+          background:
+            "radial-gradient(120% 90% at 22% 8%, color-mix(in srgb, var(--color-fg) 9%, var(--color-raised)), var(--color-raised) 68%)",
+        }}
+      >
+        <span
+          className="font-display text-muted/80 tracking-wide italic"
+          style={{ fontSize: size === "hero" ? 56 : size === "lg" ? 36 : 18 }}
+        >
+          {initials(album)}
+        </span>
+      </div>
+      {preview ? (
+        <img src={preview} alt="" aria-hidden className="absolute inset-0 size-full object-cover" />
+      ) : null}
       {show ? (
         <img
           src={src ?? undefined}
           alt=""
-          className="size-full object-cover transition-transform duration-[var(--motion-slow)] ease-[var(--ease-smooth-out)] group-hover:scale-[1.045]"
+          className={cn(
+            "relative size-full object-cover group-hover:scale-[1.045]",
+            "transition-[opacity,transform] duration-[var(--motion-slow)] ease-[var(--ease-smooth-out)]",
+            !loaded && "opacity-0",
+          )}
           loading="lazy"
           decoding="async"
+          fetchPriority={big ? "high" : undefined}
           referrerPolicy="no-referrer"
+          onLoad={() => setLoaded(true)}
           onError={() => setBroken(true)}
         />
-      ) : (
-        <div
-          className="flex size-full items-center justify-center"
-          style={{
-            background:
-              "radial-gradient(120% 90% at 22% 8%, color-mix(in srgb, var(--color-fg) 9%, var(--color-raised)), var(--color-raised) 68%)",
-          }}
-        >
-          <span
-            className="font-display text-muted/80 tracking-wide italic"
-            style={{ fontSize: size === "hero" ? 56 : size === "lg" ? 36 : 18 }}
-          >
-            {initials(album)}
-          </span>
-        </div>
-      )}
+      ) : null}
       {/* 玻璃层:顶部高光 + 底部压暗,让任何封面都有统一的物理质感 */}
       <div
         className="pointer-events-none absolute inset-0"

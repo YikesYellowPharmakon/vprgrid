@@ -1,4 +1,4 @@
-import { LoaderCircle, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Bookmark, LoaderCircle, Plus, Sparkles, Trash2 } from "lucide-react";
 import { startTransition, useState } from "react";
 import { toast } from "sonner";
 import { ALL_TASTE, tastePreset } from "@/lib/catalog/genres";
@@ -21,6 +21,10 @@ export function TasteSheet({ open, onOpenChange }: { open: boolean; onOpenChange
   const addCustomGenre = useGrain((s) => s.addCustomGenre);
   const removeCustomFamily = useGrain((s) => s.removeCustomFamily);
   const removeCustomGenre = useGrain((s) => s.removeCustomGenre);
+  const tastePresets = useGrain((s) => s.tastePresets);
+  const saveTastePreset = useGrain((s) => s.saveTastePreset);
+  const applyTastePreset = useGrain((s) => s.applyTastePreset);
+  const removeTastePreset = useGrain((s) => s.removeTastePreset);
   const refSources = useGrain((s) => s.refSources);
   const aiConf = useGrain((s) => s.aiConf);
   const { families, genres, letters } = useTaxonomy();
@@ -29,6 +33,8 @@ export function TasteSheet({ open, onOpenChange }: { open: boolean; onOpenChange
   const [aiNote, setAiNote] = useState<TasteNote | null>(null);
   const [addingFamily, setAddingFamily] = useState(false);
   const [addingChild, setAddingChild] = useState<string | null>(null);
+  const [savingPreset, setSavingPreset] = useState(false);
+  const [presetName, setPresetName] = useState("");
   const [familyLabel, setFamilyLabel] = useState("");
   const [familyZh, setFamilyZh] = useState("");
   const [childLabel, setChildLabel] = useState("");
@@ -88,6 +94,16 @@ export function TasteSheet({ open, onOpenChange }: { open: boolean; onOpenChange
 
   const genreLabel = (id: string) => genres.find((g) => g.id === id)?.label ?? id;
 
+  const tasteKey = [...taste].sort().join("|");
+  /** 当前勾选正好等于某份存档时,把那枚标签点亮。 */
+  const presetActive = (ids: string[]) => ids.length === taste.length && [...ids].sort().join("|") === tasteKey;
+  const matchedPreset = tastePresets.find((p) => presetActive(p.ids));
+  const unsaved = taste.length > 0 && !matchedPreset;
+  const defaultPresetName = () => {
+    const d = new Date();
+    return `自定义 ${d.getMonth() + 1}/${d.getDate()}`;
+  };
+
   function jump(letter: string) {
     const family = families.find((f) => f.letter === letter);
     if (!family) return;
@@ -104,6 +120,20 @@ export function TasteSheet({ open, onOpenChange }: { open: boolean; onOpenChange
     setFamilyZh("");
     setAddingFamily(false);
     toast(t.toastFamilyAdded);
+  }
+
+  /** 存一份口味:没起名就用当天日期;同名视为覆盖。 */
+  function submitPreset() {
+    const name = presetName.trim() || defaultPresetName();
+    const dup = tastePresets.some((p) => p.name.trim().toLowerCase() === name.toLowerCase());
+    const id = saveTastePreset(name);
+    if (!id) {
+      toast(taste.length === 0 ? t.toastPresetEmpty : t.toastPresetInvalid);
+      return;
+    }
+    setPresetName("");
+    setSavingPreset(false);
+    toast(dup ? t.toastPresetUpdated(taste.length) : t.toastPresetSaved(taste.length));
   }
 
   function submitChild(parentId: string) {
@@ -149,6 +179,88 @@ export function TasteSheet({ open, onOpenChange }: { open: boolean; onOpenChange
               <span className="self-center text-xs text-subtle tabular-nums">
                 {taste.length}/{genres.length}
               </span>
+            </div>
+
+            {/* 存下来的口味:一套勾选存一份,随时切回去 */}
+            <div className="mt-5 rounded-lg bg-raised p-4 shadow-[var(--shadow-border)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm">{t.presetTitle}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">{t.presetDesc}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="shrink-0 gap-1.5"
+                  onClick={() => {
+                    setPresetName(matchedPreset?.name ?? defaultPresetName());
+                    setSavingPreset((v) => !v);
+                  }}
+                >
+                  <Bookmark className="size-3.5" />
+                  {t.presetSave}
+                </Button>
+              </div>
+              {unsaved && !savingPreset ? <p className="mt-2 text-xs text-accent">{t.presetUnsaved}</p> : null}
+              {savingPreset ? (
+                <form
+                  className="mt-3 flex flex-wrap gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    submitPreset();
+                  }}
+                >
+                  <input
+                    value={presetName}
+                    onChange={(e) => setPresetName(e.target.value)}
+                    placeholder={t.phPresetName}
+                    autoComplete="off"
+                    className="h-11 min-w-40 flex-1 rounded-md bg-surface px-3 text-sm text-fg shadow-[var(--shadow-border)] outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <Button type="submit" size="sm">
+                    {t.submitPreset}
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setSavingPreset(false)}>
+                    {t.cancel}
+                  </Button>
+                </form>
+              ) : null}
+              {tastePresets.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {tastePresets.map((p) => {
+                    const on = presetActive(p.ids);
+                    return (
+                      <span key={p.id} className="inline-flex items-center">
+                        <button
+                          type="button"
+                          title={t.presetTip(p.ids.length, p.savedAt.slice(0, 10))}
+                          onClick={() => startTransition(() => applyTastePreset(p.id))}
+                          className={cn(
+                            "inline-flex h-9 items-center gap-1.5 rounded-full rounded-r-none pr-2 pl-3 text-xs tracking-wide transition-colors",
+                            on ? "bg-accent text-accent-foreground" : "bg-surface text-muted hover:text-fg",
+                          )}
+                        >
+                          {p.name}
+                          <span className={cn("text-[10px] tabular-nums", on ? "opacity-70" : "text-subtle")}>
+                            {p.ids.length}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`${t.ariaDelPreset} ${p.name}`}
+                          onClick={() => removeTastePreset(p.id)}
+                          className={cn(
+                            "flex h-9 items-center rounded-r-full pr-2.5 pl-1 text-xs",
+                            on ? "bg-accent text-accent-foreground" : "bg-surface text-muted hover:text-danger",
+                          )}
+                        >
+                          <Trash2 className="size-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
 
             {/* AI 口味画像 */}

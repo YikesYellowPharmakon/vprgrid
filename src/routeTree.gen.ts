@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiCoverRouteImport } from './routes/api/cover'
 import { Route as ApiRadarRouteImport } from './routes/api/radar'
 import { Route as ApiRefBridgeRouteImport } from './routes/api/ref-bridge'
 import { Route as ApiSyncRouteImport } from './routes/api/sync'
+import { Route as ApiVaultRouteImport } from './routes/api/vault'
 import { Route as ApiWebReleasesRouteImport } from './routes/api/web-releases'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoverRoute = ApiCoverRouteImport.update({
+  id: '/api/cover',
+  path: '/api/cover',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRadarRoute = ApiRadarRouteImport.update({
@@ -35,6 +42,11 @@ const ApiSyncRoute = ApiSyncRouteImport.update({
   path: '/api/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVaultRoute = ApiVaultRouteImport.update({
+  id: '/api/vault',
+  path: '/api/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebReleasesRoute = ApiWebReleasesRouteImport.update({
   id: '/api/web-releases',
   path: '/api/web-releases',
@@ -43,46 +55,69 @@ const ApiWebReleasesRoute = ApiWebReleasesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/cover': typeof ApiCoverRoute
   '/api/radar': typeof ApiRadarRoute
   '/api/ref-bridge': typeof ApiRefBridgeRoute
   '/api/sync': typeof ApiSyncRoute
+  '/api/vault': typeof ApiVaultRoute
   '/api/web-releases': typeof ApiWebReleasesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/cover': typeof ApiCoverRoute
   '/api/radar': typeof ApiRadarRoute
   '/api/ref-bridge': typeof ApiRefBridgeRoute
   '/api/sync': typeof ApiSyncRoute
+  '/api/vault': typeof ApiVaultRoute
   '/api/web-releases': typeof ApiWebReleasesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/cover': typeof ApiCoverRoute
   '/api/radar': typeof ApiRadarRoute
   '/api/ref-bridge': typeof ApiRefBridgeRoute
   '/api/sync': typeof ApiSyncRoute
+  '/api/vault': typeof ApiVaultRoute
   '/api/web-releases': typeof ApiWebReleasesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/api/radar' | '/api/ref-bridge' | '/api/sync' | '/api/web-releases'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/radar' | '/api/ref-bridge' | '/api/sync' | '/api/web-releases'
-  id:
-    | '__root__'
     | '/'
+    | '/api/cover'
     | '/api/radar'
     | '/api/ref-bridge'
     | '/api/sync'
+    | '/api/vault'
+    | '/api/web-releases'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/api/cover'
+    | '/api/radar'
+    | '/api/ref-bridge'
+    | '/api/sync'
+    | '/api/vault'
+    | '/api/web-releases'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/cover'
+    | '/api/radar'
+    | '/api/ref-bridge'
+    | '/api/sync'
+    | '/api/vault'
     | '/api/web-releases'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiCoverRoute: typeof ApiCoverRoute
   ApiRadarRoute: typeof ApiRadarRoute
   ApiRefBridgeRoute: typeof ApiRefBridgeRoute
   ApiSyncRoute: typeof ApiSyncRoute
+  ApiVaultRoute: typeof ApiVaultRoute
   ApiWebReleasesRoute: typeof ApiWebReleasesRoute
 }
 
@@ -93,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cover': {
+      id: '/api/cover'
+      path: '/api/cover'
+      fullPath: '/api/cover'
+      preLoaderRoute: typeof ApiCoverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/radar': {
@@ -116,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/vault': {
+      id: '/api/vault'
+      path: '/api/vault'
+      fullPath: '/api/vault'
+      preLoaderRoute: typeof ApiVaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/web-releases': {
       id: '/api/web-releases'
       path: '/api/web-releases'
@@ -128,9 +177,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiCoverRoute: ApiCoverRoute,
   ApiRadarRoute: ApiRadarRoute,
   ApiRefBridgeRoute: ApiRefBridgeRoute,
   ApiSyncRoute: ApiSyncRoute,
+  ApiVaultRoute: ApiVaultRoute,
   ApiWebReleasesRoute: ApiWebReleasesRoute,
 }
 export const routeTree = rootRouteImport

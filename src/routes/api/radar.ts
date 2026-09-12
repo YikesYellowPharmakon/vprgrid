@@ -12,7 +12,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getWeekCatalog } from "@/lib/catalog/api";
 import { buildReference, normalizeKey, syntheticId, DEFAULT_REF_ENTRIES, type GoldEntry } from "@/lib/catalog/gold";
 import { ALL_GENRES, DEFAULT_TASTE, inferGenres } from "@/lib/catalog/genres";
-import { buildRefGenreProfile, DEFAULT_WEIGHTS, rankAlbums } from "@/lib/catalog/score";
+import { buildRefGenreProfile, DEFAULT_WEIGHTS, isAssemblyLine, rankAlbums } from "@/lib/catalog/score";
 import { getLatestSyncPayload } from "@/lib/catalog/sync-store";
 import type { ScoreWeights } from "@/lib/catalog/types";
 import { fridayOfWeek, mondayOf, monthEnd, sundayOf } from "@/lib/catalog/weeks";
@@ -152,6 +152,9 @@ export const Route = createFileRoute("/api/radar")({
             start?: unknown;
             end?: unknown;
             items?: unknown;
+            scanned?: unknown;
+            passed?: unknown;
+            line?: unknown;
           } | null;
           const wallStart = String(syncWall?.start ?? "");
           const wallEnd = String(syncWall?.end ?? "");
@@ -172,7 +175,9 @@ export const Route = createFileRoute("/api/radar")({
                   grain,
                   friday: fridayOfWeek(week),
                   generatedAt: new Date().toISOString(),
-                  scanned: null,
+                  scanned: typeof syncWall.scanned === "number" && Number.isFinite(syncWall.scanned) ? syncWall.scanned : null,
+                  passed: typeof syncWall.passed === "number" && Number.isFinite(syncWall.passed) ? syncWall.passed : null,
+                  line: typeof syncWall.line === "number" && Number.isFinite(syncWall.line) ? syncWall.line : null,
                   partial: false,
                   fromWall: true,
                   reference: items.filter((a) => a.gold),
@@ -312,6 +317,8 @@ export const Route = createFileRoute("/api/radar")({
               }
             : undefined;
 
+          const passed = ranked.filter((a) => !hidden.has(a.id)).length;
+          const line = (catalog.albums ?? []).filter((a) => a.inSelectedWeek && isAssemblyLine(a)).length;
           const cache = catalog.partial ? "no-store" : "public, max-age=60";
           return Response.json(
             {
@@ -321,7 +328,9 @@ export const Route = createFileRoute("/api/radar")({
               grain,
               friday: fridayOfWeek(mondayOf(start)),
               generatedAt: new Date().toISOString(),
-              scanned: catalog.scanned ?? null,
+              scanned: catalog.partial ? null : (catalog.scanned ?? null),
+              passed: catalog.partial ? null : passed,
+              line: catalog.partial ? null : line,
               partial: Boolean(catalog.partial),
               ...(catalog.error && !(catalog.albums ?? []).length ? { error: catalog.error } : {}),
               reference: goldWeek,

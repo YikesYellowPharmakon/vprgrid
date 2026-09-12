@@ -485,7 +485,7 @@ body.newtab .stack .card .meta { border-radius: 0 0 26px 26px; }
 body.newtab .stack .empty,
 body.newtab .stack .error { width: auto; }
 
-/* 小组件条:时钟日期 / 天气 / 音乐快讯,毛玻璃小卡片 */
+/* 小组件条:本期统计 / 音乐快讯 / 风格介绍,毛玻璃小卡片 */
 .widgets {
   display: flex;
   gap: 10px;
@@ -503,15 +503,29 @@ body.newtab .stack .error { width: auto; }
   padding: 9px 14px;
   min-width: 0;
 }
-.wclock { display: flex; flex-direction: column; justify-content: center; }
-.clock { font-size: 23px; font-weight: 600; letter-spacing: 0.05em; line-height: 1.15; font-variant-numeric: tabular-nums; }
-.wdate { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
-.wweather { display: flex; align-items: center; gap: 8px; }
-.wicon { font-size: 20px; }
-.wtemp { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.wdesc { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
-.wnews { flex: 1; }
-.newshead {
+.wstats {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  min-width: 8.2em;
+}
+.statline {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+.statlabel { color: var(--muted); }
+.statnum { font-variant-numeric: tabular-nums; font-weight: 600; }
+.wnews { flex: 1 1 0; }
+.newshead,
+.statshead,
+.genrehead {
   display: block;
   font-size: 9.5px;
   letter-spacing: 0.2em;
@@ -524,6 +538,54 @@ body.newtab .stack .error { width: auto; }
 .newslist a:hover { color: var(--accent); }
 .newsdim { color: var(--subtle); }
 
+/* 风格介绍:每次开新标签抽一条,‹ › 前后翻 */
+.wgenre { flex: 1.15 1 0; display: flex; flex-direction: column; }
+.genretop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.genrenav { display: inline-flex; gap: 2px; }
+.genrenav button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  padding: 1px 5px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.genrenav button:hover { background: color-mix(in srgb, var(--raised) 80%, transparent); color: var(--accent); }
+.genrenav button:disabled { opacity: 0.35; cursor: default; }
+.genrenav button:disabled:hover { background: transparent; color: var(--muted); }
+.genrename {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.genrewhere { font-size: 10px; color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.genredesc {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--fg) 84%, transparent);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.genrekey {
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* 尺寸滑杆组:↔ 调宽 / ↕ 调高,拖动即时生效并记住 */
 .sizers { display: inline-flex; align-items: center; gap: 10px; margin-right: 4px; }
 .sizer {
@@ -535,16 +597,29 @@ body.newtab .stack .error { width: auto; }
   background: color-mix(in srgb, var(--raised) 55%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
 }
-.sizeraxis { font-size: 11px; color: var(--subtle); line-height: 1; }
+.sizeraxis { font-size: 11px; color: var(--wall-ctl); line-height: 1; }
 .sizer input[type="range"] {
   width: 62px;
   height: 12px;
-  accent-color: var(--accent);
+  accent-color: var(--wall-ctl);
   cursor: ew-resize;
 }
+/* 一键回到默认宽高与位置,和几个调节滑杆并排 */
+.sizerreset {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  font-size: 11px;
+  color: var(--wall-ctl);
+  cursor: pointer;
+}
+.sizerreset:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent); }
+.sizerreset:active { transform: scale(0.95); }
 
 /* 大框底部功能条:状态文案 + 快捷按钮(本周 / 刷新 / 完整应用 / 设置) */
 .wallfoot {
+  /* 底部控件亮度跟 VprGrid 字标同一档,别比字标更亮或更暗 */
+  --wall-ctl: color-mix(in srgb, var(--muted) 90%, var(--subtle));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -561,7 +636,7 @@ body.newtab .stack .error { width: auto; }
   appearance: none;
   border: 0;
   background: var(--raised);
-  color: var(--fg);
+  color: var(--wall-ctl);
   font: inherit;
   font-size: 11px;
   padding: 5px 12px;
