@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
-import { coverScale, proxiedCover } from "@/lib/catalog/links";
+import { useEffect, useMemo, useState } from "react";
+import { coverFallbacks, coverScale, proxiedCover } from "@/lib/catalog/links";
 import { cn } from "@/lib/utils";
 import type { CatalogAlbum } from "@/lib/catalog/types";
 
-function initials(album: CatalogAlbum) {
+export type SleeveAlbum = Pick<CatalogAlbum, "id" | "artist" | "title" | "coverUrl"> & {
+  coverUrlLg?: string | null;
+};
+
+function initials(album: SleeveAlbum) {
   const a = album.artist.trim()[0] ?? "G";
   const t = album.title.trim()[0] ?? "R";
   return `${a}${t}`.toUpperCase();
@@ -12,23 +16,30 @@ function initials(album: CatalogAlbum) {
 /**
  * 专辑封面「唱片袋」:封面图 + 顶部高光/底部压暗的玻璃层 + 内描边。
  * 首屏只拉已预热的小图;大格在小图落地后再换清晰版,不和首屏抢带宽。
+ * 清晰版失败退回已出的小图;小图失败再走代理 / 艺人+专名检索,不立刻变字母。
  */
 export function Sleeve({
   album,
   size = "md",
   className,
 }: {
-  album: CatalogAlbum;
+  album: SleeveAlbum;
   size?: "sm" | "md" | "lg" | "hero" | "tile";
   className?: string;
 }) {
   const [broken, setBroken] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [hi, setHi] = useState(false);
+  const [hiFailed, setHiFailed] = useState(false);
+  const [baseIdx, setBaseIdx] = useState(0);
   const detail = size === "hero" || size === "lg";
   const tile = size === "tile";
   const who = { artist: album.artist, title: album.title };
-  const lo = proxiedCover(album.coverUrl, who);
+  const bases = useMemo(
+    () => coverFallbacks(album.coverUrl, who),
+    [album.coverUrl, album.artist, album.title],
+  );
+  const lo = bases[baseIdx] ?? null;
   const sharpUrl = detail || tile ? coverScale(album.coverUrlLg || album.coverUrl, detail ? 800 : 500) : null;
   const hiSrc = sharpUrl
     ? proxiedCover(sharpUrl, { ...who, large: detail })
@@ -39,6 +50,8 @@ export function Sleeve({
     setBroken(false);
     setLoaded(false);
     setHi(false);
+    setHiFailed(false);
+    setBaseIdx(0);
   }, [album.id]);
 
   const show = Boolean(src) && !broken;
@@ -88,12 +101,30 @@ export function Sleeve({
           referrerPolicy="no-referrer"
           onLoad={() => {
             setLoaded(true);
-            if (hi || !hiSrc || hiSrc === lo) return;
-            const bump = () => setHi(true);
+            if (hi || hiFailed || !hiSrc || hiSrc === lo) return;
+            const bump = () => {
+              const probe = new Image();
+              probe.referrerPolicy = "no-referrer";
+              probe.onload = () => setHi(true);
+              probe.onerror = () => setHiFailed(true);
+              probe.src = hiSrc;
+            };
             if (typeof requestIdleCallback === "function") requestIdleCallback(bump, { timeout: 900 });
             else window.setTimeout(bump, 160);
           }}
-          onError={() => setBroken(true)}
+          onError={() => {
+            if (hi) {
+              setHi(false);
+              setHiFailed(true);
+              return;
+            }
+            if (baseIdx < bases.length - 1) {
+              setLoaded(false);
+              setBaseIdx((i) => i + 1);
+              return;
+            }
+            setBroken(true);
+          }}
         />
       ) : null}
       <div

@@ -17,7 +17,7 @@ const MAX_TOTAL_BYTES = 96_000_000;
 export const MISS_TTL_MS = 60 * 60 * 12 * 1000;
 const SOFT_MISS_TTL_MS = 2 * 60 * 1000;
 const LOOKUP_MISS_TTL_MS = 30 * 60 * 1000;
-const UPSTREAM_TIMEOUT_MS = 15_000;
+const UPSTREAM_TIMEOUT_MS = { demand: 8_000, warm: 15_000 } as const;
 const BROWSER_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 /**
@@ -117,7 +117,7 @@ async function load(target: string, lane: Lane): Promise<CoverHit | null> {
     fetch(target, {
       redirect: "follow",
       headers: upstreamHeaders(target),
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS[lane]),
     }),
   );
   if (!res.ok) return null;
@@ -169,8 +169,35 @@ export type CoverRequest = {
   large?: boolean;
 };
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** 谁先出图用谁;两边都空才算 miss。 */
+function firstCoverHit(
+  a: Promise<CoverHit | null>,
+  b: Promise<CoverHit | null>,
+): Promise<CoverHit | null> {
+  return new Promise((resolve) => {
+    let pending = 2;
+    let done = false;
+    const take = (hit: CoverHit | null) => {
+      if (done) return;
+      if (hit) {
+        done = true;
+        resolve(hit);
+        return;
+      }
+      pending -= 1;
+      if (pending === 0) resolve(null);
+    };
+    a.then(take, () => take(null));
+    b.then(take, () => take(null));
+  });
+}
+
 /**
- * 先回源给定地址;404 / 超时后再按艺人+专辑名检索。
+ * 先回源给定地址;404 立刻、或主链超过 3.5s 还没回来,就并行按艺人+专辑名检索。
  * 检索命中会同时挂到原 URL 键上,下次同一张 CAA 空链直接出图。
  */
 export async function fetchCoverResolved(req: CoverRequest, lane: Lane = "demand"): Promise<CoverHit | null> {
@@ -190,29 +217,39 @@ export async function fetchCoverResolved(req: CoverRequest, lane: Lane = "demand
     }
   }
 
+  const canLookup = lookupKey != null && !missedRecently(lookupKey);
+  const keep = (hit: CoverHit) => {
+    if (lookupKey) remember(lookupKey, hit);
+    if (req.target) remember(req.target, hit);
+    return hit;
+  };
+
+  const lookupJob = (when: Promise<"go" | "skip">) =>
+    when.then((signal) => {
+      if (signal === "skip" || !canLookup || !lookupKey) return null;
+      return loadLooked(artist, title, Boolean(req.large), lane).catch(() => null);
+    });
+
   if (req.target && !missedRecently(req.target)) {
-    const hit = await fetchCover(req.target, lane);
-    if (hit) {
-      if (lookupKey) remember(lookupKey, hit);
-      return hit;
+    const directP = fetchCover(req.target, lane);
+    if (canLookup) {
+      const gate = Promise.race([
+        directP.then((hit) => (hit ? ("skip" as const) : ("go" as const))),
+        sleep(3500).then(() => "go" as const),
+      ]);
+      const hit = await firstCoverHit(directP, lookupJob(gate));
+      if (hit) return keep(hit);
+    } else {
+      const hit = await directP;
+      if (hit) return keep(hit);
     }
+  } else if (canLookup) {
+    const hit = await loadLooked(artist, title, Boolean(req.large), lane).catch(() => null);
+    if (hit) return keep(hit);
   }
 
-  if (!lookupKey || missedRecently(lookupKey)) return null;
-
-  try {
-    const hit = await loadLooked(artist, title, Boolean(req.large), lane);
-    if (hit) {
-      remember(lookupKey, hit);
-      if (req.target) remember(req.target, hit);
-      return hit;
-    }
-    rememberMiss(lookupKey, LOOKUP_MISS_TTL_MS);
-    return null;
-  } catch {
-    rememberMiss(lookupKey, SOFT_MISS_TTL_MS);
-    return null;
-  }
+  if (lookupKey && canLookup) rememberMiss(lookupKey, LOOKUP_MISS_TTL_MS);
+  return null;
 }
 
 export type WarmCover = string | null | undefined | { url?: string | null; artist?: string; title?: string };

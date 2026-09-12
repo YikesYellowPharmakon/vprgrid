@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, Download, ImageDown, Minus, Plus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { proxiedCover } from "@/lib/catalog/links";
+import { coverFallbacks } from "@/lib/catalog/links";
 import {
   buildTopsterChart,
   canEncodeTopster,
@@ -55,16 +55,48 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
+async function loadCoverImage(artist: string, title: string, url: string): Promise<HTMLImageElement | null> {
+  for (const src of coverFallbacks(url, { force: true, artist, title })) {
+    const img = await loadImage(src);
+    if (img) return img;
+  }
+  return null;
+}
+
 /** 400 张一次全发会把浏览器的请求队列堵死,分批下更快也更稳。 */
-async function loadImages(srcs: string[], limit = 16): Promise<(HTMLImageElement | null)[]> {
-  const out: (HTMLImageElement | null)[] = Array.from({ length: srcs.length }, () => null);
+async function loadImages(
+  albums: Array<{ artist: string; title: string; coverURL: string }>,
+  limit = 16,
+): Promise<(HTMLImageElement | null)[]> {
+  const out: (HTMLImageElement | null)[] = Array.from({ length: albums.length }, () => null);
   let next = 0;
   await Promise.all(
-    Array.from({ length: Math.min(limit, srcs.length) }, async () => {
-      for (let i = next++; i < srcs.length; i = next++) out[i] = await loadImage(srcs[i]);
+    Array.from({ length: Math.min(limit, albums.length) }, async () => {
+      for (let i = next++; i < albums.length; i = next++) {
+        const a = albums[i];
+        out[i] = a ? await loadCoverImage(a.artist, a.title, a.coverURL) : null;
+      }
     }),
   );
   return out;
+}
+
+function WallCover({ artist, title, url }: { artist: string; title: string; url: string }) {
+  const srcs = useMemo(() => coverFallbacks(url, { artist, title }), [artist, title, url]);
+  const [idx, setIdx] = useState(0);
+  const src = srcs[idx];
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      className="size-full object-cover"
+      onError={() => setIdx((i) => i + 1)}
+    />
+  );
 }
 
 function saveBlob(blob: Blob, filename: string) {
@@ -147,9 +179,7 @@ export function TopsterSheet({
       ctx.fillStyle = background;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       // 代理成同源图片再画,否则画布被跨域污染,toBlob 会直接抛错
-      const imgs = await loadImages(
-        used.map((a) => proxiedCover(a.coverURL, { force: true, artist: a.artist, title: a.title }) ?? a.coverURL),
-      );
+      const imgs = await loadImages(used);
       used.forEach((album, i) => {
         const x = pad + (i % cols) * (cell + pad);
         const y = pad + Math.floor(i / cols) * (cell + pad);
@@ -236,16 +266,7 @@ export function TopsterSheet({
                   const a = used[i];
                   return (
                     <div key={i} className="aspect-square overflow-hidden bg-fg/5">
-                      {a ? (
-                        <img
-                          src={proxiedCover(a.coverURL, { artist: a.artist, title: a.title }) ?? a.coverURL}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          referrerPolicy="no-referrer"
-                          className="size-full object-cover"
-                        />
-                      ) : null}
+                      {a ? <WallCover artist={a.artist} title={a.title} url={a.coverURL} /> : null}
                     </div>
                   );
                 })}

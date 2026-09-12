@@ -74,6 +74,32 @@ function coverQuery(opts?: ProxiedCoverOpts): string {
   return s ? `&${s}` : "";
 }
 
+export function coverLookupSrc(
+  artist?: string | null,
+  title?: string | null,
+  large?: boolean,
+): string | null {
+  const a = artist?.trim() ?? "";
+  const t = title?.trim() ?? "";
+  if (!a || !t) return null;
+  const q = new URLSearchParams({ artist: a, title: t });
+  if (large) q.set("lg", "1");
+  return `/api/cover?${q}`;
+}
+
+/** 同一张封面的递补地址:现用链 → 强制代理 → 只按艺人+专名检索。 */
+export function coverFallbacks(url: string | null | undefined, opts?: ProxiedCoverOpts): string[] {
+  const out: string[] = [];
+  const add = (u: string | null | undefined) => {
+    const s = u?.trim();
+    if (s && !out.includes(s)) out.push(s);
+  };
+  add(proxiedCover(url, opts));
+  add(proxiedCover(url, { ...opts, force: true }));
+  add(coverLookupSrc(opts?.artist, opts?.title, opts?.large));
+  return out;
+}
+
 /** `force` 让所有白名单图源都走代理(同源图片才能画进画布)。 */
 export function proxiedCover(url: string | null | undefined, opts?: ProxiedCoverOpts): string | null {
   const extra = coverQuery(opts);

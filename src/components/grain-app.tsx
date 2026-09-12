@@ -42,7 +42,6 @@ import {
 } from "@/lib/catalog/sources";
 import { ALL_TASTE, inferGenres, tastePreset } from "@/lib/catalog/genres";
 import { getListenLinks } from "@/lib/catalog/listen";
-import { proxiedCover } from "@/lib/catalog/links";
 import { searchGlobal, type GlobalHit } from "@/lib/catalog/search";
 import { buildRefGenreProfile, isAssemblyLine, rankAlbums, scoreAlbum } from "@/lib/catalog/score";
 import type { CatalogAlbum, ScoredAlbum, WeekCatalog } from "@/lib/catalog/types";
@@ -1675,26 +1674,13 @@ function fullDate(d: string | null): string {
 
 function GlobalHitRow({ hit, inRef, onAdd }: { hit: GlobalHit; inRef: boolean; onAdd: () => void }) {
   const t = useT();
-  const [broken, setBroken] = useState(false);
-  const coverSrc = proxiedCover(hit.coverUrl, { artist: hit.artist, title: hit.title });
   return (
     <div className="flex items-center gap-3 py-3 sm:gap-4">
-      <div className="size-12 shrink-0 overflow-hidden rounded-sm bg-raised shadow-[var(--shadow-border)]">
-        {coverSrc && !broken ? (
-          <img
-            src={coverSrc}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="size-full object-cover"
-            onError={() => setBroken(true)}
-          />
-        ) : (
-          <div className="font-display flex size-full items-center justify-center text-sm text-subtle italic">
-            {hit.title.slice(0, 1).toUpperCase()}
-          </div>
-        )}
-      </div>
+      <Sleeve
+        album={{ id: hit.id, artist: hit.artist, title: hit.title, coverUrl: hit.coverUrl }}
+        size="sm"
+        className="size-12 rounded-sm"
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs text-muted">{hit.artist}</p>
         <p className="truncate text-sm sm:text-base">{hit.title}</p>

@@ -376,23 +376,44 @@ function bindCover(img, thumb, eager, item, state) {
   img.height = 160;
   img.loading = eager ? "eager" : "lazy";
   img.fetchPriority = eager ? "high" : "low";
-  img.addEventListener(
-    "load",
-    () => {
-      img.classList.add("on");
-      if ((window.devicePixelRatio || 1) < 1.25 || !item) return;
-      const hi = wallThumb(item.cover, thumbMeta(item, state?.base), 400);
-      if (!hi || hi === thumb) return;
-      const bump = () => {
-        if (img.dataset.hi === "1") return;
+  img.addEventListener("load", () => {
+    img.classList.add("on");
+    if (img.dataset.hi === "1" || img.dataset.hi === "skip") return;
+    if ((window.devicePixelRatio || 1) < 1.25 || !item) return;
+    const hi = wallThumb(item.cover, thumbMeta(item, state?.base), 400);
+    if (!hi || hi === img.src) return;
+    const bump = () => {
+      if (img.dataset.hi) return;
+      const probe = new Image();
+      probe.referrerPolicy = "no-referrer";
+      probe.onload = () => {
+        if (img.dataset.hi) return;
         img.dataset.hi = "1";
         img.src = hi;
       };
-      if (typeof requestIdleCallback === "function") requestIdleCallback(bump, { timeout: 1200 });
-      else setTimeout(bump, 200);
-    },
-    { once: true },
-  );
+      probe.onerror = () => {
+        img.dataset.hi = "skip";
+      };
+      probe.src = hi;
+    };
+    if (typeof requestIdleCallback === "function") requestIdleCallback(bump, { timeout: 1200 });
+    else setTimeout(bump, 200);
+  });
+  img.onerror = () => {
+    if (img.dataset.hi === "1") {
+      img.dataset.hi = "skip";
+      if (thumb) img.src = thumb;
+      return;
+    }
+    const base = String(state?.base || "").replace(/\/$/, "");
+    if (!img.dataset.fb && base && item?.artist && item?.title) {
+      img.dataset.fb = "1";
+      const q = new URLSearchParams({ artist: item.artist, title: item.title });
+      img.src = `${base}/api/cover?${q}`;
+      return;
+    }
+    img.remove();
+  };
   img.src = thumb;
 }
 
@@ -994,7 +1015,6 @@ function card(item, state, t, idx = 0) {
   const thumb = wallThumb(item.cover, thumbMeta(item, state.base));
   if (thumb) {
     const img = document.createElement("img");
-    img.onerror = () => img.remove();
     bindCover(img, thumb, idx < COVER_EAGER, item, state);
     cover.appendChild(img);
   }
@@ -1193,6 +1213,16 @@ function morebox(rest, state, t) {
       img.loading = "lazy";
       img.decoding = "async";
       img.referrerPolicy = "no-referrer";
+      img.onerror = () => {
+        const base = String(state.base || "").replace(/\/$/, "");
+        if (!img.dataset.fb && base && r.artist && r.title) {
+          img.dataset.fb = "1";
+          const q = new URLSearchParams({ artist: r.artist, title: r.title });
+          img.src = `${base}/api/cover?${q}`;
+          return;
+        }
+        img.remove();
+      };
       img.src = thumb;
       cell.appendChild(img);
     }
