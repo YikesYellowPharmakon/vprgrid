@@ -34,6 +34,35 @@ export function coverProxyAllows(hostname: string): boolean {
   return COVER_PROXY_HOSTS.some((re) => re.test(hostname));
 }
 
+/** 按显示边长改写常见图床的缩图参数,避免先下原图再被 CSS 放大发糊。 */
+export function coverScale(url: string | null | undefined, px: number): string | null {
+  if (!url) return null;
+  const raw = String(url).trim();
+  if (!raw) return null;
+  if (/music\.126\.net/i.test(raw)) {
+    return `${raw.split("#")[0].split("?")[0]}?param=${px}y${px}`;
+  }
+  if (/coverartarchive\.org/i.test(raw)) {
+    const n = px >= 700 ? 1200 : px >= 400 ? 500 : 250;
+    if (/\/front-\d+\b/.test(raw)) return raw.replace(/\/front-\d+\b/, `/front-${n}`);
+    return raw.replace(/\/front\/?(?=[?#]|$)/, `/front-${n}`);
+  }
+  if (/mzstatic\.com/i.test(raw)) {
+    return raw.replace(/\d+x\d+[^.]*(\.\w+)(?:\?|$)/i, `${px}x${px}$1`);
+  }
+  if (/bcbits\.com/i.test(raw)) {
+    const n = px >= 700 ? 10 : px >= 400 ? 5 : 2;
+    return raw.replace(/_\d+\.jpg/i, `_${n}.jpg`);
+  }
+  if (/albumoftheyear\.org/i.test(raw)) {
+    return raw.replace(/\/\d+x(?:\d+|0)\//, `/${px}x0/`);
+  }
+  if (/lastfm|last\.fm/i.test(raw)) {
+    return raw.replace(/\/i\/u\/\d+x\d+\//, `/i/u/${px}x${px}/`);
+  }
+  return raw;
+}
+
 export type ProxiedCoverOpts = { force?: boolean; artist?: string; title?: string; large?: boolean };
 
 function coverQuery(opts?: ProxiedCoverOpts): string {

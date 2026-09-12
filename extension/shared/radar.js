@@ -309,19 +309,20 @@ function el(tag, cls, text) {
 }
 
 /** 像网址就直达,否则走表单里的 Google 搜索(说明性使用,不仿标志)。 */
-/** 墙上只要约 128–250px。同步码里的网易云图常是原图,Cover Art Archive 还会 302 到 archive.org。 */
-function wallThumb(url, meta) {
+/** 墙上先铺 200px(与原先一致,首屏不重),视网膜再闲时换成 400。 */
+function wallThumb(url, meta, px = 200) {
   if (!url && !(meta?.artist && meta?.title && meta?.base)) return null;
   let u = url ? String(url).trim() : "";
   if (u.startsWith("//")) u = `https:${u}`;
   else if (u.startsWith("http://")) u = `https://${u.slice(7)}`;
   if (u && !/^https:\/\//i.test(u)) u = "";
   if (/music\.126\.net/i.test(u)) {
-    u = `${u.split("#")[0].split("?")[0]}?param=200y200`;
+    u = `${u.split("#")[0].split("?")[0]}?param=${px}y${px}`;
   }
   if (/coverartarchive\.org/i.test(u)) {
-    if (/\/front-\d+\b/.test(u)) u = u.replace(/\/front-\d+\b/, "/front-250");
-    else u = u.replace(/\/front\/?(?=[?#]|$)/, "/front-250");
+    const n = px >= 400 ? "500" : "250";
+    if (/\/front-\d+\b/.test(u)) u = u.replace(/\/front-\d+\b/, `/front-${n}`);
+    else u = u.replace(/\/front\/?(?=[?#]|$)/, `/front-${n}`);
   }
   const needsProxy = /coverartarchive\.org|archive\.org|music\.126\.net|albumoftheyear\.org/i.test(u);
   const base = String(meta?.base || "").replace(/\/$/, "");
@@ -367,7 +368,7 @@ function warmupCovers(items, base) {
   }
 }
 
-function bindCover(img, thumb, eager) {
+function bindCover(img, thumb, eager, item, state) {
   img.decoding = "async";
   img.referrerPolicy = "no-referrer";
   img.alt = "";
@@ -375,7 +376,23 @@ function bindCover(img, thumb, eager) {
   img.height = 160;
   img.loading = eager ? "eager" : "lazy";
   img.fetchPriority = eager ? "high" : "low";
-  img.addEventListener("load", () => img.classList.add("on"), { once: true });
+  img.addEventListener(
+    "load",
+    () => {
+      img.classList.add("on");
+      if ((window.devicePixelRatio || 1) < 1.25 || !item) return;
+      const hi = wallThumb(item.cover, thumbMeta(item, state?.base), 400);
+      if (!hi || hi === thumb) return;
+      const bump = () => {
+        if (img.dataset.hi === "1") return;
+        img.dataset.hi = "1";
+        img.src = hi;
+      };
+      if (typeof requestIdleCallback === "function") requestIdleCallback(bump, { timeout: 1200 });
+      else setTimeout(bump, 200);
+    },
+    { once: true },
+  );
   img.src = thumb;
 }
 
@@ -978,7 +995,7 @@ function card(item, state, t, idx = 0) {
   if (thumb) {
     const img = document.createElement("img");
     img.onerror = () => img.remove();
-    bindCover(img, thumb, idx < COVER_EAGER);
+    bindCover(img, thumb, idx < COVER_EAGER, item, state);
     cover.appendChild(img);
   }
   if (item.gold) cover.appendChild(el("span", "pick", t.pick));

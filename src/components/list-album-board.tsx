@@ -217,7 +217,7 @@ export function ListGridTile({
     <div className={cn("album-tile group relative text-left", selected && "rounded-lg bg-raised/70")}>
       <div className="relative">
         <button type="button" onClick={onOpen} className="block w-full text-left">
-          <Sleeve album={album} size="hero" />
+          <Sleeve album={album} size="tile" />
           <span className="font-display absolute top-2 left-2 rounded-sm bg-bg/75 px-1.5 text-xs italic tabular-nums backdrop-blur-sm">
             {rank}
           </span>

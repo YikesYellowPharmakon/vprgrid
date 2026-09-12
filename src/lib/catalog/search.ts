@@ -149,7 +149,7 @@ async function searchItunes(q: string): Promise<GlobalHit[]> {
       artist: r.artistName,
       date: r.releaseDate ? r.releaseDate.slice(0, 10) : null,
       type: "Album",
-      coverUrl: r.artworkUrl100 ? r.artworkUrl100.replace("100x100", "250x250") : null,
+      coverUrl: r.artworkUrl100 ? r.artworkUrl100.replace("100x100", "400x400") : null,
       source: "iTunes",
     }));
   } catch {
