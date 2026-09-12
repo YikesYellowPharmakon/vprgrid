@@ -36,7 +36,7 @@ body.popup {
   overflow: hidden;
 }
 
-.wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 48px; }
+.wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 28px 24px 48px; }
 body.popup .wrap {
   width: 428px;
   max-width: 428px;

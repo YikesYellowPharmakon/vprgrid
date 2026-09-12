@@ -6,9 +6,12 @@
 #bgfx {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  isolation: isolate;
+  contain: strict;
+  transform: translateZ(0);
 }
 #bgfx::before,
 #bgfx::after {
@@ -64,45 +67,20 @@ html[data-theme="matrix"] #bgfx::after {
   display: none;
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  grid-template-columns: repeat(auto-fill, 16px);
-  grid-auto-rows: 15px;
-  justify-items: center;
-  align-items: center;
-  font: 15px/1 ui-monospace, "IBM Plex Mono", monospace;
-  letter-spacing: 0;
-  color: rgb(0 255 102 / 0.2);
-  user-select: none;
   pointer-events: none;
-  animation: fx-prerain-fall 0.85s linear infinite;
-}
-#bgfx .prerain > span {
-  display: flex;
-  width: 16px;
-  height: 15px;
-  align-items: center;
-  justify-content: center;
 }
 html:not([data-theme]) #bgfx .prerain,
 html[data-theme="matrix"] #bgfx .prerain {
-  display: grid;
+  display: block;
 }
 html.rain-live #bgfx .prerain {
-  opacity: 0;
-  transition: opacity 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  display: none !important;
 }
 html:not([data-theme]) #bgfx::before,
 html[data-theme="matrix"] #bgfx::before {
   background-image: none;
   animation: none;
 }
-@keyframes fx-prerain-fall {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(0, -15px, 0); }
-}
-
 /* ————— Cyber Neon ————— */
 html[data-theme="cyber-neon"] {
   --bg: #0a0716;

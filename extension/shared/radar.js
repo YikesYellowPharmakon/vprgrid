@@ -351,6 +351,20 @@ function wallThumb(url, meta, px = 200) {
 
 const COVER_EAGER = 28;
 const coverWarmed = new Set();
+const hiQueue = [];
+let hiBusy = 0;
+
+function pumpHiUpgrade() {
+  if (hiBusy || document.hidden) return;
+  const job = hiQueue.shift();
+  if (!job) return;
+  hiBusy = 1;
+  job(() => {
+    hiBusy = 0;
+    if (typeof requestIdleCallback === "function") requestIdleCallback(pumpHiUpgrade, { timeout: 480 });
+    else setTimeout(pumpHiUpgrade, 90);
+  });
+}
 
 function thumbMeta(item, base) {
   return { base, artist: item?.artist, title: item?.title };
@@ -382,22 +396,37 @@ function bindCover(img, thumb, eager, item, state) {
     if ((window.devicePixelRatio || 1) < 1.25 || !item) return;
     const hi = wallThumb(item.cover, thumbMeta(item, state?.base), 400);
     if (!hi || hi === img.src) return;
-    const bump = () => {
-      if (img.dataset.hi) return;
+    const bump = (done) => {
+      if (img.dataset.hi || !img.isConnected) {
+        done();
+        return;
+      }
       const probe = new Image();
       probe.referrerPolicy = "no-referrer";
       probe.onload = () => {
-        if (img.dataset.hi) return;
+        if (img.dataset.hi || !img.parentNode) {
+          done();
+          return;
+        }
         img.dataset.hi = "1";
-        img.src = hi;
+        const over = img.cloneNode(false);
+        over.src = hi;
+        over.className = img.className;
+        over.alt = "";
+        over.decoding = "async";
+        over.referrerPolicy = "no-referrer";
+        img.after(over);
+        done();
       };
       probe.onerror = () => {
         img.dataset.hi = "skip";
+        done();
       };
       probe.src = hi;
     };
-    if (typeof requestIdleCallback === "function") requestIdleCallback(bump, { timeout: 1200 });
-    else setTimeout(bump, 200);
+    hiQueue.push(bump);
+    if (typeof requestIdleCallback === "function") requestIdleCallback(pumpHiUpgrade, { timeout: 1600 });
+    else setTimeout(pumpHiUpgrade, 280);
   });
   img.onerror = () => {
     if (img.dataset.hi === "1") {
@@ -779,7 +808,7 @@ function startMatrixRain() {
   if (!host || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   rainCanvas = document.createElement("canvas");
   rainCanvas.className = "rain-canvas";
-  rainCanvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 820ms cubic-bezier(0.22, 1, 0.36, 1);";
+  rainCanvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;opacity:0.62;contain:strict;pointer-events:none;";
   host.appendChild(rainCanvas);
   const ctx = rainCanvas.getContext("2d", { alpha: true, desynchronized: true });
   if (!ctx) return stopMatrixRain();
@@ -787,22 +816,27 @@ function startMatrixRain() {
   const FONT = 15;
   const COL = 16;
   const ROW = 13;
-  let cols = 0, rows = 0, heads, speeds, lens, grid;
+  const MAX_COLS = 88;
+  let cols = 0, rows = 0, viewW = 0, viewH = 0, heads, speeds, lens, grid;
   const resetColumn = (c, initial) => {
     speeds[c] = 5.4 + Math.random() * 10.5;
     lens[c] = 16 + Math.floor(Math.random() * 20);
     heads[c] = initial ? Math.random() * (rows + 8) : -Math.random() * rows * 0.22;
   };
   const layout = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    const w = window.innerWidth, h = window.innerHeight;
-    rainCanvas.width = Math.round(w * dpr);
-    rainCanvas.height = Math.round(h * dpr);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    if (Math.abs(w - viewW) < 10 && Math.abs(h - viewH) < 10 && cols) return;
+    viewW = w;
+    viewH = h;
+    rainCanvas.width = Math.max(1, Math.round(w * dpr));
+    rainCanvas.height = Math.max(1, Math.round(h * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.font = `${FONT}px ui-monospace, monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    cols = Math.ceil(w / COL);
+    cols = Math.min(MAX_COLS, Math.ceil(w / COL));
     rows = Math.ceil(h / ROW) + 2;
     heads = new Float32Array(cols);
     speeds = new Float32Array(cols);
@@ -813,18 +847,19 @@ function startMatrixRain() {
   };
   const draw = (step, churnOn) => {
     if (churnOn) {
-      const churn = Math.min(720, Math.ceil(grid.length * 0.022));
+      const churn = Math.min(220, Math.ceil(grid.length * 0.008));
       for (let i = 0; i < churn; i++) {
         grid[Math.floor(Math.random() * grid.length)] = pickRainGlyphCode();
       }
     }
-    ctx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+    ctx.clearRect(0, 0, viewW, viewH);
+    const stepX = viewW / cols;
     for (let c = 0; c < cols; c++) {
       heads[c] += speeds[c] * step;
       const headPos = heads[c];
       const len = lens[c];
       if (headPos - len > rows) { resetColumn(c, false); continue; }
-      const x = c * COL + COL / 2;
+      const x = c * stepX + stepX / 2;
       const headRow = Math.floor(headPos);
       for (let i = 0; i < len; i++) {
         const row = headRow - i;
@@ -849,22 +884,45 @@ function startMatrixRain() {
   };
   layout();
   draw(0, false);
-  requestAnimationFrame(() => {
-    if (!rainCanvas) return;
-    rainCanvas.style.opacity = "0.62";
-    document.documentElement.classList.add("rain-live");
-  });
-  const onResize = () => { layout(); draw(0, false); };
+  document.documentElement.classList.add("rain-live");
+  host.querySelector(".prerain")?.remove();
+
+  let resizeTimer = 0;
+  const onResize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      layout();
+      draw(0, false);
+    }, 140);
+  };
+  const onVis = () => {
+    if (document.hidden) {
+      if (rainRaf) cancelAnimationFrame(rainRaf);
+      rainRaf = 0;
+      return;
+    }
+    if (!rainRaf) {
+      last = performance.now();
+      rainRaf = requestAnimationFrame(frame);
+    }
+    pumpHiUpgrade();
+  };
   window.addEventListener("resize", onResize);
-  rainDetach = () => window.removeEventListener("resize", onResize);
+  document.addEventListener("visibilitychange", onVis);
+  rainDetach = () => {
+    clearTimeout(resizeTimer);
+    window.removeEventListener("resize", onResize);
+    document.removeEventListener("visibilitychange", onVis);
+  };
 
   let last = performance.now();
   const frame = (now) => {
     rainRaf = requestAnimationFrame(frame);
+    if (document.hidden) return;
     const dt = now - last;
-    if (dt < 16) return;
+    if (dt < 33) return;
     last = now;
-    draw(Math.min(dt, 34) / 1000, true);
+    draw(Math.min(dt, 50) / 1000, true);
   };
   rainRaf = requestAnimationFrame(frame);
 }
