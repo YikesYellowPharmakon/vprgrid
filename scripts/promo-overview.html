@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Montserrat:wght@700&display=swap" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1280px; height: 640px; overflow: hidden; }
+      body {
+        font-family: "IBM Plex Mono", "PingFang SC", ui-monospace, monospace;
+        color: #a7ffb9;
+        background:
+          radial-gradient(60% 46% at 38% -8%, rgb(0 255 102 / 0.14), transparent 62%),
+          radial-gradient(80% 50% at 88% 110%, rgb(0 0 0 / 0.7), transparent 64%),
+          #020703;
+      }
+      .grain {
+        position: fixed; inset: 0; pointer-events: none; opacity: 0.18;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+        background-size: 180px 180px;
+      }
+      .scan {
+        position: fixed; inset: 0; pointer-events: none;
+        background: repeating-linear-gradient(180deg, transparent 0 2px, rgb(0 0 0 / 0.16) 2px 3px);
+      }
+      .stage {
+        position: relative;
+        height: 640px;
+        padding: 56px 64px 52px;
+        display: grid;
+        grid-template-columns: 1fr 520px;
+        gap: 36px;
+        align-items: center;
+      }
+      .brand {
+        font-family: Montserrat, "Segoe UI", sans-serif;
+        font-weight: 700;
+        font-size: 58px;
+        letter-spacing: 0.12em;
+        line-height: 1.05;
+        color: #c8ead4;
+        text-shadow:
+          0 -0.03em 0 #7fb892,
+          0.05em 0.05em 0 #005c30,
+          0.095em 0.095em 0 #003a1e,
+          0.14em 0.14em 0 #02150b,
+          0.19em 0.23em 0.22em rgb(0 0 0 / 0.5);
+      }
+      .sys { font-size: 0.58em; letter-spacing: 0.18em; }
+      .tag {
+        margin-top: 22px;
+        font-size: 18px;
+        letter-spacing: 0.04em;
+        color: #7ad48f;
+      }
+      .sub {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #33804a;
+      }
+      .features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 28px;
+      }
+      .feat {
+        padding: 8px 12px;
+        border-radius: 999px;
+        color: #a7ffb9;
+        background: #0a2112;
+        box-shadow: 0 0 0 1px rgb(0 255 102 / 0.18);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+      .sources {
+        margin-top: 34px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #33804a;
+      }
+      .fan {
+        position: relative;
+        height: 420px;
+      }
+      .sleeve {
+        position: absolute;
+        width: 168px;
+        height: 168px;
+        border-radius: 26px;
+        overflow: hidden;
+        background: #0a2112;
+        box-shadow:
+          0 0 0 1px rgb(0 255 102 / 0.2),
+          inset 0 1px 0 rgb(255 255 255 / 0.14),
+          0 16px 36px rgb(0 0 0 / 0.45);
+      }
+      .sleeve img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .s0 { left: 36px; top: 118px; transform: rotate(-14deg); }
+      .s1 { left: 118px; top: 42px; transform: rotate(-6deg); }
+      .s2 { left: 214px; top: 128px; transform: rotate(4deg); z-index: 2; }
+      .s3 { left: 300px; top: 28px; transform: rotate(11deg); }
+      .s4 { left: 348px; top: 196px; transform: rotate(-3deg); z-index: 3; }
+      .panel {
+        position: absolute;
+        left: 8px;
+        bottom: 8px;
+        right: 18px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgb(5 19 9 / 0.72);
+        box-shadow: 0 0 0 1px rgb(0 255 102 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.08);
+        backdrop-filter: blur(10px);
+        z-index: 4;
+      }
+      .panel b { display: block; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #58c273; }
+      .panel p { margin-top: 4px; font-size: 13px; color: #a7ffb9; }
+    </style>
+  </head>
+  <body>
+    <div class="grain"></div>
+    <div class="scan"></div>
+    <div class="stage">
+      <div>
+        <p class="brand">VprGrid<span class="sys">.SYS</span></p>
+        <p class="tag">Taste-first weekly album radar</p>
+        <p class="sub">No account · data stays on your machine</p>
+        <div class="features">
+          <span class="feat">New Tab wall</span>
+          <span class="feat">Weekly radar</span>
+          <span class="feat">Taste references</span>
+        </div>
+        <p class="sources">ListenBrainz · MusicBrainz · Bandcamp · AOTY</p>
+      </div>
+      <div class="fan" id="fan">
+        <div class="panel">
+          <b>Overview</b>
+          <p>References in · public catalogs screened · week view out</p>
+        </div>
+      </div>
+    </div>
+    <script type="application/json" id="covers">[]</script>
+    <script>
+      const files = JSON.parse(document.getElementById("covers").textContent);
+      const fan = document.getElementById("fan");
+      files.slice(0, 5).forEach((item, i) => {
+        const src = typeof item === "string" ? item : item.src;
+        const el = document.createElement("div");
+        el.className = "sleeve s" + i;
+        el.innerHTML = '<img alt="" src="' + src + '" />';
+        fan.insertBefore(el, fan.firstChild);
+      });
+    </script>
+  </body>
+</html>
