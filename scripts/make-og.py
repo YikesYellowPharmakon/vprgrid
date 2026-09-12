@@ -140,17 +140,14 @@ def main() -> None:
     img = wall.crop((left, top, left + W, top + H))
     img = ImageEnhance.Contrast(img).enhance(1.08)
 
-    img = img.convert("RGBA")
-    plate = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    pd = ImageDraw.Draw(plate)
     box = (178, 222, W - 178, 398)
-    pd.rounded_rectangle((box[0] + 6, box[1] + 8, box[2] + 6, box[3] + 10), radius=20, fill=(0, 0, 0, 90))
-    pd.rounded_rectangle(box, radius=18, fill=(8, 16, 10, 226))
-    # glass: top sheen + inner rim
-    pd.rounded_rectangle((box[0] + 1, box[1] + 1, box[2] - 1, box[1] + 54), radius=17, fill=(255, 255, 255, 18))
-    pd.rounded_rectangle(box, radius=18, outline=(0, 230, 110, 46), width=2)
-    pd.rounded_rectangle((box[0] + 2, box[1] + 2, box[2] - 2, box[3] - 2), radius=16, outline=(255, 255, 255, 16), width=1)
-    img = Image.alpha_composite(img, plate).convert("RGB")
+    mask = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(mask).rounded_rectangle(box, radius=18, fill=255)
+    slab = Image.new("RGB", (W, H), (8, 14, 10))
+    img = Image.composite(slab, img, mask)
+    draw_box = ImageDraw.Draw(img)
+    draw_box.rounded_rectangle(box, radius=18, outline=(0, 90, 48), width=2)
+    draw_box.rounded_rectangle((box[0] + 2, box[1] + 2, box[2] - 2, box[3] - 2), radius=16, outline=(28, 44, 32), width=1)
 
     img = scanlines(img)
     img = film_grain(img)
@@ -168,6 +165,8 @@ def main() -> None:
     draw.rectangle(((W - bar_w) // 2, 348, (W + bar_w) // 2, 351), fill=ACCENT)
 
     img.save(OUT, "JPEG", quality=90, optimize=True)
+    card = ROOT / "public" / "card.jpg"
+    img.save(card, "JPEG", quality=90, optimize=True)
     print(OUT, img.size, OUT.stat().st_size)
 
 
