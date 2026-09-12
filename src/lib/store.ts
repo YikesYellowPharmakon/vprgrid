@@ -7,6 +7,7 @@ import {
   GENRE_FAMILIES,
   mergeTaxonomy,
   slugify,
+  titleCaseLabel,
   type CustomFamily,
   type CustomGenre,
 } from "./catalog/genres";
@@ -387,7 +388,7 @@ export const useGrain = create<GrainState>()(
       setSleeve: (id, reading) => set({ sleeves: { ...get().sleeves, [id]: reading } }),
       setView: (v) => set({ view: v }),
       addCustomFamily: (label, zh) => {
-        const name = cleanLabel(label);
+        const name = titleCaseLabel(cleanLabel(label));
         const zhName = cleanLabel(zh);
         if (!name) return null;
         const { customFamilies } = get();
@@ -401,7 +402,7 @@ export const useGrain = create<GrainState>()(
         return id;
       },
       addCustomGenre: (parentId, label, zh, synonyms) => {
-        const name = cleanLabel(label);
+        const name = titleCaseLabel(cleanLabel(label));
         const zhName = cleanLabel(zh);
         if (!name) return null;
         const { customFamilies, customGenres, taste } = get();

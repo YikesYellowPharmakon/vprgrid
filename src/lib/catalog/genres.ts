@@ -639,6 +639,17 @@ export function familyLetter(label: string): string {
   return m ? m[0]!.toUpperCase() : "#";
 }
 
+/** 风格英文名按词首大写:Library music → Library Music;EAI / UK 这类缩写不动。 */
+export function titleCaseLabel(label: string): string {
+  const raw = label.replace(/\s+/g, " ").trim();
+  if (!raw) return raw;
+  return raw.replace(/\p{L}[\p{L}'’]*/gu, (word) => {
+    if (word.length <= 5 && word === word.toUpperCase() && /\p{Lu}/u.test(word)) return word;
+    const chars = [...word];
+    return chars[0]!.toLocaleUpperCase("en") + chars.slice(1).join("").toLocaleLowerCase("en");
+  });
+}
+
 function withRare(family: FamilySpec): FamilySpec {
   return { ...family, children: [...family.children, ...(RARE_BY_PARENT[family.id] ?? [])] };
 }
@@ -651,10 +662,10 @@ const MERGED_SOURCE: FamilySpec[] = [
 export const GENRE_FAMILIES: GenreFamily[] = az(
   MERGED_SOURCE.map((family) => ({
     id: family.id,
-    label: family.label,
+    label: titleCaseLabel(family.label),
     zh: family.zh,
     letter: familyLetter(family.label),
-    children: az(family.children.map((c) => child(family.id, c[0], c[1], c[2], c[3], Boolean(c[4])))),
+    children: az(family.children.map((c) => child(family.id, c[0], titleCaseLabel(c[1]), c[2], c[3], Boolean(c[4])))),
   })),
 );
 
@@ -716,7 +727,7 @@ export function mergeTaxonomy(customFamilies: CustomFamily[], customGenres: Cust
   for (const g of customGenres) {
     const def: GenreDef = {
       id: g.id,
-      label: g.label,
+      label: titleCaseLabel(g.label),
       zh: g.zh,
       synonyms: g.synonyms,
       parentId: g.parentId,
@@ -735,7 +746,7 @@ export function mergeTaxonomy(customFamilies: CustomFamily[], customGenres: Cust
 
   const custom = customFamilies.map((family) => ({
     id: family.id,
-    label: family.label,
+    label: titleCaseLabel(family.label),
     zh: family.zh,
     letter: familyLetter(family.label),
     custom: true,

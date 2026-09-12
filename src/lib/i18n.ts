@@ -747,7 +747,7 @@ const en: Dict = {
   musicMapBack: (name) => `Back to ${name}`,
 
   tasteTitle: "Taste A–Z",
-  tasteHeading: "Families / genres",
+  tasteHeading: "Families / Genres",
   selectAllGenres: (n) => `Select all ${n}`,
   clearAll: "Clear",
   addFamily: "Add family",
@@ -759,7 +759,7 @@ const en: Dict = {
   familyWord: "Family",
   customMark: "custom",
   customWord: "Custom",
-  genresCount: (on, total) => `${on}/${total} genres`,
+  genresCount: (on, total) => `${on}/${total} Genres`,
   ariaDelFamily: "Delete family",
   deselectFamily: "Deselect family",
   selectFamily: "Select family",
