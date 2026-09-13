@@ -61,7 +61,7 @@ export function formatWeek(key: string, lang: "zh" | "en"): { title: string; ran
   if (key === EARLIER_KEY) {
     return lang === "zh"
       ? { title: "更早收录", range: "2026 之前 · 歌单补遗" }
-      : { title: "Earlier", range: "pre-2026 · addenda" };
+      : { title: "Earlier", range: "pre-2026 · Addenda" };
   }
   const { year, week } = isoWeekNumber(key);
   const start = parseIso(key);

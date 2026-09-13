@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "VprGrid",
   "description": "近期发行缩略图墙(新标签页 + 工具栏弹窗),并可从 RYM / AOTY 列表页一键导入参考订阅。",
-  "version": "1.6.9",
+  "version": "1.6.10",
   "action": {
     "default_popup": "popup.html",
     "default_title": "VprGrid",

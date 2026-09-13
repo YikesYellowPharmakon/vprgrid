@@ -1295,7 +1295,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
                 className="px-2 pb-2 text-left sm:px-1 sm:pb-4"
               >
                 <p className="font-display text-subtle italic">
-                  {hero.gold ? "Curator's pick of the week" : "Head of the week"}
+                  {hero.gold ? t.heroPickKicker : t.heroAutoKicker}
                 </p>
                 <p className="mt-3 text-sm text-muted">{hero.artist}</p>
                 <h2 className="font-display mt-1 text-3xl leading-tight font-medium tracking-[-0.03em] sm:text-4xl">

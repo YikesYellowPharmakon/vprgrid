@@ -213,6 +213,34 @@ const I18N = {
   },
 };
 
+/** 英文界面:每个空格后的词首大写,其余字母原样。 */
+function capitalizeEnglishWords(s) {
+  return String(s).replace(/(^|\s)(\p{L})/gu, (_, lead, ch) => lead + ch.toLocaleUpperCase("en"));
+}
+function englishize(value) {
+  if (typeof value === "string") {
+    if (/[\u4e00-\u9fff]/.test(value)) return value;
+    return capitalizeEnglishWords(value);
+  }
+  if (typeof value === "function") {
+    return (...args) => {
+      const mapped = args.map((arg, i) => (typeof arg === "string" ? `\uE000${i}\uE001` : arg));
+      const result = value(...mapped);
+      if (typeof result !== "string") return englishize(result);
+      const cased = capitalizeEnglishWords(result);
+      return args.reduce((s, arg, i) => (typeof arg === "string" ? s.split(`\uE000${i}\uE001`).join(arg) : s), cased);
+    };
+  }
+  if (Array.isArray(value)) return value.map(englishize);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = englishize(v);
+    return out;
+  }
+  return value;
+}
+I18N.en = englishize(I18N.en);
+
 /* ---------- 周工具 ---------- */
 
 function mondayOfIso(iso) {

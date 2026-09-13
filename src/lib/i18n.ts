@@ -131,6 +131,8 @@ const zh = {
   ariaView: "视图",
   errCatalog: "自动目录请求失败，参考清单不受影响；可点击刷新重试。",
   errCatalogWith: (e: string) => `自动目录读取失败：${e}。参考清单不受影响。`,
+  heroPickKicker: "本周亲选",
+  heroAutoKicker: "本期头条",
   heroPickTag: " · 参考亲选",
   heroAutoTag: (type: string, score: number) => ` · ${type} · 综合 ${score}`,
   repTrack: "代表曲",
@@ -485,7 +487,38 @@ const zh = {
 
 type Dict = { [K in keyof typeof zh]: (typeof zh)[K] };
 
-const en: Dict = {
+/** 英文界面:每个空格后的词首大写,其余字母原样(缩写 / 专名不被压成小写)。 */
+export function capitalizeEnglishWords(s: string): string {
+  return s.replace(/(^|\s)(\p{L})/gu, (_m, lead: string, ch: string) => lead + ch.toLocaleUpperCase("en"));
+}
+
+function englishize<T>(value: T): T {
+  if (typeof value === "string") {
+    if (/[\u4e00-\u9fff]/.test(value)) return value;
+    return capitalizeEnglishWords(value) as T;
+  }
+  if (typeof value === "function") {
+    return ((...args: unknown[]) => {
+      const mapped = args.map((arg, i) => (typeof arg === "string" ? `\uE000${i}\uE001` : arg));
+      const result = (value as (...a: unknown[]) => unknown)(...mapped);
+      if (typeof result !== "string") return englishize(result);
+      const cased = capitalizeEnglishWords(result);
+      return args.reduce<string>((s, arg, i) => {
+        if (typeof arg !== "string") return s;
+        return s.split(`\uE000${i}\uE001`).join(arg);
+      }, cased);
+    }) as T;
+  }
+  if (Array.isArray(value)) return value.map((item) => englishize(item)) as T;
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) out[key] = englishize(item);
+    return out as T;
+  }
+  return value;
+}
+
+const enRaw: Dict = {
   appTitle: "Album Radar",
   demoBadge: "Public demo",
   demoBlurb: "What's worth hearing this week? Taste-filter public catalogs. The reference pool starts empty; changes stay in your browser.",
@@ -606,6 +639,8 @@ const en: Dict = {
   ariaView: "View",
   errCatalog: "Catalog fetch failed — reference picks are unaffected; hit refresh to retry.",
   errCatalogWith: (e) => `Catalog error: ${e}. Reference picks are unaffected.`,
+  heroPickKicker: "Curator's pick of the week",
+  heroAutoKicker: "Head of the week",
   heroPickTag: " · Curator pick",
   heroAutoTag: (type, score) => ` · ${type} · score ${score}`,
   repTrack: "Key track",
@@ -954,6 +989,8 @@ const en: Dict = {
   bridgeExternal: "external",
 };
 
+const en = englishize(enRaw);
+
 const DICTS: Record<Lang, Dict> = { zh, en };
 
 export function useT(): Dict {
@@ -966,8 +1003,8 @@ export function getDict(lang: Lang): Dict {
 }
 
 /** 主题描述(themes.ts 的 note 为中文,这里给英文对照)。 */
-export const THEME_NOTES_EN: Record<string, string> = {
+export const THEME_NOTES_EN: Record<string, string> = englishize({
   matrix: "Phosphor green · digital rain (default)",
   "red-alert": "Soviet alarm red · radar sweep",
   custom: "Your own colors, optional backdrop and texture",
-};
+});
