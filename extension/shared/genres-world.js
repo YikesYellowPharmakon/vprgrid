@@ -4,7 +4,7 @@
 export const GENRES_WORLD = [
   {
     id: "city-pop",
-    en: "City pop",
+    en: "City Pop",
     zh: "都会流行",
     whereZh: "日本 · 东京 · 1970s–80s",
     whereEn: "Tokyo, Japan · 1970s–80s",
@@ -14,7 +14,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "shibuya-kei",
-    en: "Shibuya-kei",
+    en: "Shibuya-Kei",
     zh: "涩谷系",
     whereZh: "日本 · 涩谷 · 1990s",
     whereEn: "Shibuya, Tokyo · 1990s",
@@ -44,7 +44,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "tsugaru-shamisen",
-    en: "Tsugaru-jamisen",
+    en: "Tsugaru-Jamisen",
     zh: "津轻三味线",
     whereZh: "日本 · 青森 · 传统",
     whereEn: "Aomori, Japan · traditional",
@@ -54,7 +54,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "min-yo-okinawa",
-    en: "Okinawan min'yō",
+    en: "Okinawan Min'yō",
     zh: "冲绳民谣",
     whereZh: "日本 · 冲绳 · 传统",
     whereEn: "Okinawa, Japan · traditional",
@@ -64,7 +64,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "shakuhachi-honkyoku",
-    en: "Shakuhachi honkyoku",
+    en: "Shakuhachi Honkyoku",
     zh: "尺八本曲",
     whereZh: "日本 · 传统",
     whereEn: "Japan · traditional",
@@ -104,7 +104,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "samulnori",
-    en: "SamulNori",
+    en: "Samulnori",
     zh: "四物打击",
     whereZh: "韩国 · 首尔 · 1970s",
     whereEn: "Seoul, South Korea · 1970s",
@@ -124,7 +124,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "cantonese-opera",
-    en: "Cantonese opera",
+    en: "Cantonese Opera",
     zh: "粤剧",
     whereZh: "中国 · 广东 · 传统",
     whereEn: "Guangdong, China · traditional",
@@ -144,7 +144,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "jiangnan-sizhu",
-    en: "Jiangnan sizhu",
+    en: "Jiangnan Sizhu",
     zh: "江南丝竹",
     whereZh: "中国 · 江浙沪 · 传统",
     whereEn: "Jiangnan, China · traditional",
@@ -164,7 +164,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "urtiin-duu",
-    en: "Urtiin duu (long song)",
+    en: "Urtiin Duu (Long Song)",
     zh: "蒙古长调",
     whereZh: "蒙古与内蒙古 · 传统",
     whereEn: "Mongolia & Inner Mongolia · traditional",
@@ -174,7 +174,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "khoomei",
-    en: "Khöömei (Tuvan throat singing)",
+    en: "Khöömei (Tuvan Throat Singing)",
     zh: "图瓦呼麦",
     whereZh: "俄罗斯 · 图瓦 · 传统",
     whereEn: "Tuva, Russia · traditional",
@@ -184,7 +184,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "gyuto-chant",
-    en: "Gyütö tantric chant",
+    en: "Gyütö Tantric Chant",
     zh: "藏传密宗诵经",
     whereZh: "西藏与流亡寺院 · 传统",
     whereEn: "Tibet & exile monasteries · traditional",
@@ -204,7 +204,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "luk-thung",
-    en: "Luk thung",
+    en: "Luk Thung",
     zh: "泰国乡村歌",
     whereZh: "泰国 · 1960s–70s",
     whereEn: "Thailand · 1960s–70s",
@@ -214,7 +214,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "mor-lam",
-    en: "Mor lam",
+    en: "Mor Lam",
     zh: "摩兰",
     whereZh: "泰国 · 伊森与老挝 · 传统至 1970s",
     whereEn: "Isan, Thailand & Laos · traditional–1970s",
@@ -224,7 +224,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "phleng-phuea-chiwit",
-    en: "Phleng phuea chiwit",
+    en: "Phleng Phuea Chiwit",
     zh: "为生命之歌",
     whereZh: "泰国 · 1970s",
     whereEn: "Thailand · 1970s",
@@ -234,7 +234,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "cambodian-psych-rock",
-    en: "Cambodian psychedelic rock",
+    en: "Cambodian Psychedelic Rock",
     zh: "柬埔寨迷幻摇滚",
     whereZh: "柬埔寨 · 金边 · 1960s–70s",
     whereEn: "Phnom Penh, Cambodia · 1960s–70s",
@@ -284,7 +284,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "gong-kebyar",
-    en: "Gong kebyar",
+    en: "Gong Kebyar",
     zh: "巴厘闪耀甘美兰",
     whereZh: "印尼 · 巴厘 · 1910s 起",
     whereEn: "Bali, Indonesia · from the 1910s",
@@ -294,7 +294,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "ca-tru",
-    en: "Ca trù",
+    en: "Ca Trù",
     zh: "越南歌筹",
     whereZh: "越南 · 北部 · 传统",
     whereEn: "Northern Vietnam · traditional",
@@ -304,7 +304,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "nhac-vang",
-    en: "Nhạc vàng",
+    en: "Nhạc Vàng",
     zh: "黄色音乐",
     whereZh: "越南 · 西贡 · 1960s–70s",
     whereEn: "Saigon, Vietnam · 1960s–70s",
@@ -324,7 +324,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "manila-sound",
-    en: "Manila sound",
+    en: "Manila Sound",
     zh: "马尼拉之声",
     whereZh: "菲律宾 · 马尼拉 · 1970s",
     whereEn: "Manila, Philippines · 1970s",
@@ -334,7 +334,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "mahagita",
-    en: "Mahāgīta (Burmese harp song)",
+    en: "Mahāgīta (Burmese Harp Song)",
     zh: "缅甸古典歌乐",
     whereZh: "缅甸 · 宫廷传统",
     whereEn: "Burmese court tradition · traditional",
@@ -384,7 +384,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "filmi-funk",
-    en: "Filmi funk",
+    en: "Filmi Funk",
     zh: "宝莱坞放克",
     whereZh: "印度 · 孟买 · 1970s",
     whereEn: "Bombay, India · 1970s",
@@ -394,7 +394,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "lollywood-soundtrack",
-    en: "Lollywood soundtrack pop",
+    en: "Lollywood Soundtrack Pop",
     zh: "拉合尔影歌",
     whereZh: "巴基斯坦 · 拉合尔 · 1970s",
     whereEn: "Lahore, Pakistan · 1970s",
@@ -404,7 +404,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "ghazal-urdu",
-    en: "Urdu ghazal singing",
+    en: "Urdu Ghazal Singing",
     zh: "乌尔都加扎尔",
     whereZh: "巴基斯坦与北印度 · 1960s–80s",
     whereEn: "Pakistan & North India · 1960s–80s",
@@ -414,7 +414,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "sufi-kafi",
-    en: "Sufi kafi",
+    en: "Sufi Kafi",
     zh: "苏菲卡菲",
     whereZh: "巴基斯坦 · 旁遮普与信德 · 传统",
     whereEn: "Punjab & Sindh, Pakistan · traditional",
@@ -444,7 +444,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "andalusi-nuba",
-    en: "Andalusi nuba",
+    en: "Andalusi Nuba",
     zh: "安达卢斯努巴",
     whereZh: "摩洛哥与阿尔及利亚 · 传统",
     whereEn: "Morocco & Algeria · traditional",
@@ -474,7 +474,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "dabke-syria",
-    en: "Syrian keyboard dabke",
+    en: "Syrian Keyboard Dabke",
     zh: "叙利亚键盘达布卡",
     whereZh: "叙利亚 · 哈塞克 · 1990s",
     whereEn: "Hassake, Syria · 1990s",
@@ -484,7 +484,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "persian-radif",
-    en: "Persian radif",
+    en: "Persian Radif",
     zh: "波斯拉迪夫",
     whereZh: "伊朗 · 传统",
     whereEn: "Iran · traditional",
@@ -514,7 +514,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "anadolu-psych",
-    en: "Anadolu psych",
+    en: "Anadolu Psych",
     zh: "安纳托利亚迷幻",
     whereZh: "土耳其 · 伊斯坦布尔 · 1970s",
     whereEn: "Istanbul, Turkey · 1970s",
@@ -524,7 +524,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "asik-tradition",
-    en: "Âşık tradition",
+    en: "Âşık Tradition",
     zh: "阿希克吟游",
     whereZh: "土耳其 · 安纳托利亚 · 传统",
     whereEn: "Anatolia, Turkey · traditional",
@@ -544,7 +544,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "uyghur-muqam",
-    en: "Uyghur muqam",
+    en: "Uyghur Muqam",
     zh: "维吾尔木卡姆",
     whereZh: "中国 · 新疆 · 传统",
     whereEn: "Xinjiang, China · traditional",
@@ -554,7 +554,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "komuz-kyrgyz",
-    en: "Kyrgyz komuz music",
+    en: "Kyrgyz Komuz Music",
     zh: "柯尔克孜库姆兹",
     whereZh: "吉尔吉斯斯坦 · 传统",
     whereEn: "Kyrgyzstan · traditional",
@@ -574,7 +574,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "palm-wine-highlife",
-    en: "Palm-wine highlife",
+    en: "Palm-Wine Highlife",
     zh: "棕榈酒吉他",
     whereZh: "西非 · 沿海港口 · 1950s–60s",
     whereEn: "Coastal West Africa · 1950s–60s",
@@ -584,7 +584,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "burger-highlife",
-    en: "Burger highlife",
+    en: "Burger Highlife",
     zh: "汉堡高生活",
     whereZh: "加纳与德国 · 1980s",
     whereEn: "Ghana & Germany · 1980s",
@@ -614,7 +614,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "ethio-jazz",
-    en: "Ethio-jazz",
+    en: "Ethio-Jazz",
     zh: "埃塞爵士",
     whereZh: "埃塞俄比亚 · 亚的斯亚贝巴 · 1960s–70s",
     whereEn: "Addis Ababa, Ethiopia · 1960s–70s",
@@ -634,7 +634,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "tuareg-assouf",
-    en: "Tuareg assouf",
+    en: "Tuareg Assouf",
     zh: "图阿雷格漠地吉他",
     whereZh: "撒哈拉 · 马里与阿尔及利亚 · 1980s 起",
     whereEn: "Sahara, Mali & Algeria · from the 1980s",
@@ -654,7 +654,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "jeliya",
-    en: "Jeliya (kora tradition)",
+    en: "Jeliya (Kora Tradition)",
     zh: "世袭乐师之艺",
     whereZh: "西非 · 曼德地区 · 传统",
     whereEn: "Mande West Africa · traditional",
@@ -684,7 +684,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "kwassa-kwassa",
-    en: "Kwassa kwassa",
+    en: "Kwassa Kwassa",
     zh: "夸萨夸萨",
     whereZh: "刚果与巴黎 · 1980s",
     whereEn: "Congo & Paris · 1980s",
@@ -694,7 +694,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "guinean-authenticite",
-    en: "Guinean authenticité orchestras",
+    en: "Guinean Authenticité Orchestras",
     zh: "几内亚国家乐团",
     whereZh: "几内亚 · 科纳克里 · 1960s–70s",
     whereEn: "Conakry, Guinea · 1960s–70s",
@@ -734,7 +734,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "mbira-dzavadzimu",
-    en: "Mbira dzavadzimu",
+    en: "Mbira Dzavadzimu",
     zh: "祖灵姆比拉",
     whereZh: "津巴布韦 · 绍纳地区 · 传统",
     whereEn: "Shona Zimbabwe · traditional",
@@ -764,7 +764,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "cape-jazz",
-    en: "Cape jazz",
+    en: "Cape Jazz",
     zh: "开普爵士",
     whereZh: "南非 · 开普敦 · 1970s",
     whereEn: "Cape Town, South Africa · 1970s",
@@ -804,7 +804,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "chicha",
-    en: "Chicha (Amazonian cumbia)",
+    en: "Chicha (Amazonian Cumbia)",
     zh: "亚马逊奇查",
     whereZh: "秘鲁 · 亚马逊油镇 · 1960s–70s",
     whereEn: "Peruvian Amazon oil towns · 1960s–70s",
@@ -854,7 +854,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "huapango-huasteco",
-    en: "Huapango huasteco",
+    en: "Huapango Huasteco",
     zh: "瓦斯特卡华潘戈",
     whereZh: "墨西哥 · 瓦斯特卡 · 传统",
     whereEn: "Huasteca, Mexico · traditional",
@@ -864,7 +864,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "conjunto-tejano",
-    en: "Conjunto tejano",
+    en: "Conjunto Tejano",
     zh: "德州墨裔手风琴乐",
     whereZh: "美国 · 南德州 · 1930s–80s",
     whereEn: "South Texas, USA · 1930s–80s",
@@ -884,7 +884,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "forro-pe-de-serra",
-    en: "Forró pé-de-serra",
+    en: "Forró Pé-De-Serra",
     zh: "山脚福罗",
     whereZh: "巴西 · 东北 · 1940s–60s",
     whereEn: "Northeast Brazil · 1940s–60s",
@@ -894,7 +894,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "samba-rock",
-    en: "Samba-rock",
+    en: "Samba-Rock",
     zh: "桑巴摇滚",
     whereZh: "巴西 · 圣保罗与里约 · 1960s–70s",
     whereEn: "São Paulo & Rio, Brazil · 1960s–70s",
@@ -934,7 +934,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "mizik-rasin",
-    en: "Mizik rasin",
+    en: "Mizik Rasin",
     zh: "海地根源乐",
     whereZh: "海地 · 太子港 · 1980s–90s",
     whereEn: "Port-au-Prince, Haiti · 1980s–90s",
@@ -964,7 +964,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "coimbra-fado",
-    en: "Coimbra fado",
+    en: "Coimbra Fado",
     zh: "科英布拉法多",
     whereZh: "葡萄牙 · 科英布拉 · 1950s–60s",
     whereEn: "Coimbra, Portugal · 1950s–60s",
@@ -974,7 +974,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "cante-jondo",
-    en: "Cante jondo",
+    en: "Cante Jondo",
     zh: "深沉之歌",
     whereZh: "西班牙 · 安达卢西亚 · 传统",
     whereEn: "Andalusia, Spain · traditional",
@@ -984,7 +984,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "canzone-napoletana",
-    en: "Canzone napoletana",
+    en: "Canzone Napoletana",
     zh: "那不勒斯歌谣",
     whereZh: "意大利 · 那不勒斯 · 1880s–1950s",
     whereEn: "Naples, Italy · 1880s–1950s",
@@ -994,7 +994,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "pizzica-salentina",
-    en: "Pizzica salentina",
+    en: "Pizzica Salentina",
     zh: "萨伦托皮齐卡",
     whereZh: "意大利 · 萨伦托 · 传统",
     whereEn: "Salento, Italy · traditional",
@@ -1004,7 +1004,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "rock-progressivo-italiano",
-    en: "Rock progressivo italiano",
+    en: "Rock Progressivo Italiano",
     zh: "意大利前卫摇滚",
     whereZh: "意大利 · 1970s",
     whereEn: "Italy · 1970s",
@@ -1014,7 +1014,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "library-music",
-    en: "Library music",
+    en: "Library Music",
     zh: "库存音乐",
     whereZh: "英国与意大利 · 1960s–70s",
     whereEn: "UK & Italy · 1960s–70s",
@@ -1024,7 +1024,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "spaghetti-western-score",
-    en: "Spaghetti western score",
+    en: "Spaghetti Western Score",
     zh: "意式西部片配乐",
     whereZh: "意大利 · 罗马 · 1960s–70s",
     whereEn: "Rome, Italy · 1960s–70s",
@@ -1034,7 +1034,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "bulgarian-wedding-music",
-    en: "Bulgarian wedding music",
+    en: "Bulgarian Wedding Music",
     zh: "保加利亚婚礼乐",
     whereZh: "保加利亚 · 1980s",
     whereEn: "Bulgaria · 1980s",
@@ -1044,7 +1044,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "balkan-brass",
-    en: "Balkan brass band",
+    en: "Balkan Brass Band",
     zh: "巴尔干铜管",
     whereZh: "塞尔维亚与罗马尼亚 · 传统至 1990s",
     whereEn: "Serbia & Romania · traditional–1990s",
@@ -1054,7 +1054,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "cantu-a-tenore",
-    en: "Cantu a tenore",
+    en: "Cantu A Tenore",
     zh: "撒丁四声部牧歌",
     whereZh: "意大利 · 撒丁岛 · 传统",
     whereEn: "Sardinia, Italy · traditional",
@@ -1064,7 +1064,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "georgian-polyphony",
-    en: "Georgian polyphony",
+    en: "Georgian Polyphony",
     zh: "格鲁吉亚复调",
     whereZh: "格鲁吉亚 · 传统",
     whereEn: "Georgia · traditional",
@@ -1074,7 +1074,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "russian-bard-song",
-    en: "Russian bard song",
+    en: "Russian Bard Song",
     zh: "苏联吟游歌",
     whereZh: "苏联 · 1960s–80s",
     whereEn: "Soviet Union · 1960s–80s",
@@ -1084,7 +1084,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "hawaiian-slack-key",
-    en: "Hawaiian slack-key guitar",
+    en: "Hawaiian Slack-Key Guitar",
     zh: "夏威夷松弦吉他",
     whereZh: "美国 · 夏威夷 · 1900s–70s",
     whereEn: "Hawaii, USA · 1900s–70s",
@@ -1094,7 +1094,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "sacred-harp",
-    en: "Sacred Harp (shape-note)",
+    en: "Sacred Harp (Shape-Note)",
     zh: "神圣竖琴谱歌",
     whereZh: "美国 · 南部乡村 · 1800s 起",
     whereEn: "Rural American South · from the 1800s",
@@ -1104,7 +1104,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "old-time-appalachian",
-    en: "Old-time Appalachian string band",
+    en: "Old-Time Appalachian String Band",
     zh: "阿巴拉契亚老式弦乐",
     whereZh: "美国 · 阿巴拉契亚 · 1920s–70s",
     whereEn: "Appalachia, USA · 1920s–70s",
@@ -1114,7 +1114,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "cajun-dance-music",
-    en: "Cajun dance music",
+    en: "Cajun Dance Music",
     zh: "卡真舞曲",
     whereZh: "美国 · 路易斯安那 · 1930s–70s",
     whereEn: "Louisiana, USA · 1930s–70s",
@@ -1124,7 +1124,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "hill-country-blues",
-    en: "Hill country blues",
+    en: "Hill Country Blues",
     zh: "丘陵蓝调",
     whereZh: "美国 · 密西西比北部 · 1960s–90s",
     whereEn: "North Mississippi, USA · 1960s–90s",
@@ -1134,7 +1134,7 @@ export const GENRES_WORLD = [
   },
   {
     id: "northern-soul",
-    en: "Northern soul",
+    en: "Northern Soul",
     zh: "北方灵魂乐",
     whereZh: "英国 · 英格兰北部 · 1970s",
     whereEn: "Northern England · 1970s",

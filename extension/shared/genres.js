@@ -11,6 +11,17 @@ function normName(s) {
     .replace(/[^a-z0-9]+/g, "");
 }
 
+/** 与应用端 titleCaseLabel 同规则:City pop → City Pop;UK / EAI 这类缩写不动。 */
+export function titleCaseLabel(label) {
+  const raw = String(label || "").replace(/\s+/g, " ").trim();
+  if (!raw) return raw;
+  return raw.replace(/\p{L}[\p{L}'’]*/gu, (word) => {
+    if (word.length <= 5 && word === word.toUpperCase() && /\p{Lu}/u.test(word)) return word;
+    const chars = [...word];
+    return chars[0].toLocaleUpperCase("en") + chars.slice(1).join("").toLocaleLowerCase("en");
+  });
+}
+
 /** 两份库各写各的,同一个风格可能撞名:id 与英文名各去一次重,字段缺了就整条丢掉。 */
 function merge(lists) {
   const out = [];
@@ -24,7 +35,7 @@ function merge(lists) {
       if (!g.zh || !g.zhDesc || !g.enDesc || !g.whereZh || !g.whereEn) continue;
       ids.add(id);
       names.add(name);
-      out.push(g);
+      out.push({ ...g, en: titleCaseLabel(g.en) });
     }
   }
   return out;

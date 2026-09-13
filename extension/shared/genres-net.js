@@ -14,7 +14,7 @@ export const GENRES_NET = [
   },
   {
     id: "bacardi-house",
-    en: "Bacardi house",
+    en: "Bacardi House",
     zh: "巴卡迪浩室",
     whereZh: "南非 · 比勒陀利亚 · 2000s",
     whereEn: "Pretoria, South Africa · 2000s",
@@ -34,7 +34,7 @@ export const GENRES_NET = [
   },
   {
     id: "electro-chaabi",
-    en: "Electro chaabi / mahraganat",
+    en: "Electro Chaabi / Mahraganat",
     zh: "电子沙比（马赫拉加纳特）",
     whereZh: "埃及 · 开罗 · 2010s",
     whereEn: "Cairo, Egypt · 2010s",
@@ -54,7 +54,7 @@ export const GENRES_NET = [
   },
   {
     id: "funk-bruxaria",
-    en: "Funk bruxaria",
+    en: "Funk Bruxaria",
     zh: "巫术放克",
     whereZh: "巴西 · 圣保罗 · 2020s",
     whereEn: "São Paulo, Brazil · 2020s",
@@ -74,7 +74,7 @@ export const GENRES_NET = [
   },
   {
     id: "dembow-dominicano",
-    en: "Dominican dembow",
+    en: "Dominican Dembow",
     zh: "多米尼加登波",
     whereZh: "多米尼加 · 圣多明各 · 2000s–10s",
     whereEn: "Santo Domingo, Dominican Republic · 2000s–10s",
@@ -94,7 +94,7 @@ export const GENRES_NET = [
   },
   {
     id: "private-school-amapiano",
-    en: "Private school amapiano",
+    en: "Private School Amapiano",
     zh: "私校阿玛皮阿诺",
     whereZh: "南非 · 约翰内斯堡 · 2010s–20s",
     whereEn: "Johannesburg, South Africa · 2010s–20s",
@@ -104,7 +104,7 @@ export const GENRES_NET = [
   },
   {
     id: "baltimore-club",
-    en: "Baltimore club",
+    en: "Baltimore Club",
     zh: "巴尔的摩俱乐部",
     whereZh: "美国 · 巴尔的摩 · 1990s",
     whereEn: "Baltimore, USA · 1990s",
@@ -134,7 +134,7 @@ export const GENRES_NET = [
   },
   {
     id: "ghetto-house",
-    en: "Ghetto house",
+    en: "Ghetto House",
     zh: "贫民浩室",
     whereZh: "美国 · 芝加哥 · 1990s",
     whereEn: "Chicago, USA · 1990s",
@@ -144,7 +144,7 @@ export const GENRES_NET = [
   },
   {
     id: "new-orleans-bounce",
-    en: "New Orleans bounce",
+    en: "New Orleans Bounce",
     zh: "新奥尔良弹跳",
     whereZh: "美国 · 新奥尔良 · 1990s",
     whereEn: "New Orleans, USA · 1990s",
@@ -154,7 +154,7 @@ export const GENRES_NET = [
   },
   {
     id: "miami-booty-bass",
-    en: "Miami booty bass",
+    en: "Miami Booty Bass",
     zh: "迈阿密臀低音",
     whereZh: "美国 · 迈阿密 · 1980s–90s",
     whereEn: "Miami, USA · 1980s–90s",
@@ -164,7 +164,7 @@ export const GENRES_NET = [
   },
   {
     id: "uk-funky",
-    en: "UK funky",
+    en: "UK Funky",
     zh: "英式放克浩室",
     whereZh: "英国 · 伦敦 · 2000s 末",
     whereEn: "London, UK · late 2000s",
@@ -174,7 +174,7 @@ export const GENRES_NET = [
   },
   {
     id: "bassline-niche",
-    en: "Bassline (niche)",
+    en: "Bassline (Niche)",
     zh: "谢菲尔德低音房",
     whereZh: "英国 · 谢菲尔德 · 2000s",
     whereEn: "Sheffield, UK · 2000s",
@@ -184,7 +184,7 @@ export const GENRES_NET = [
   },
   {
     id: "speed-garage",
-    en: "Speed garage",
+    en: "Speed Garage",
     zh: "极速车库",
     whereZh: "英国 · 伦敦 · 1990s",
     whereEn: "London, UK · 1990s",
@@ -204,7 +204,7 @@ export const GENRES_NET = [
   },
   {
     id: "weightless-grime",
-    en: "Weightless grime",
+    en: "Weightless Grime",
     zh: "失重格赖姆",
     whereZh: "英国 · 伦敦 · 2010s",
     whereEn: "London, UK · 2010s",
@@ -214,7 +214,7 @@ export const GENRES_NET = [
   },
   {
     id: "future-garage",
-    en: "Future garage",
+    en: "Future Garage",
     zh: "未来车库",
     whereZh: "英国 · 2000s 末",
     whereEn: "UK · late 2000s",
@@ -224,7 +224,7 @@ export const GENRES_NET = [
   },
   {
     id: "deconstructed-club",
-    en: "Deconstructed club",
+    en: "Deconstructed Club",
     zh: "解构俱乐部",
     whereZh: "柏林与全球 · 2010s",
     whereEn: "Berlin & global · 2010s",
@@ -234,7 +234,7 @@ export const GENRES_NET = [
   },
   {
     id: "hard-drum",
-    en: "Hard drum",
+    en: "Hard Drum",
     zh: "硬鼓",
     whereZh: "英国 · 布里斯托与伦敦 · 2010s",
     whereEn: "Bristol & London, UK · 2010s",
@@ -244,7 +244,7 @@ export const GENRES_NET = [
   },
   {
     id: "dub-techno",
-    en: "Dub techno",
+    en: "Dub Techno",
     zh: "回响科技",
     whereZh: "德国 · 柏林 · 1990s",
     whereEn: "Berlin, Germany · 1990s",
@@ -264,7 +264,7 @@ export const GENRES_NET = [
   },
   {
     id: "industrial-techno",
-    en: "Industrial techno",
+    en: "Industrial Techno",
     zh: "工业科技",
     whereZh: "英国与柏林 · 2010s",
     whereEn: "UK & Berlin · 2010s",
@@ -274,7 +274,7 @@ export const GENRES_NET = [
   },
   {
     id: "hardgroove-techno",
-    en: "Hardgroove techno",
+    en: "Hardgroove Techno",
     zh: "硬律动科技",
     whereZh: "英国 · 伦敦 · 1990s",
     whereEn: "London, UK · 1990s",
@@ -294,7 +294,7 @@ export const GENRES_NET = [
   },
   {
     id: "free-tekno",
-    en: "Free tekno / tribe",
+    en: "Free Tekno / Tribe",
     zh: "自由锐舞铁克诺",
     whereZh: "英国与法国 · 1990s",
     whereEn: "UK & France · 1990s",
@@ -304,7 +304,7 @@ export const GENRES_NET = [
   },
   {
     id: "early-hardcore-gabber",
-    en: "Early hardcore (gabber)",
+    en: "Early Hardcore (Gabber)",
     zh: "早期硬核（加伯）",
     whereZh: "荷兰 · 鹿特丹 · 1990s",
     whereEn: "Rotterdam, Netherlands · 1990s",
@@ -324,7 +324,7 @@ export const GENRES_NET = [
   },
   {
     id: "uptempo-hardcore",
-    en: "Uptempo hardcore",
+    en: "Uptempo Hardcore",
     zh: "极速硬核",
     whereZh: "荷兰与法国 · 2010s",
     whereEn: "Netherlands & France · 2010s",
@@ -334,7 +334,7 @@ export const GENRES_NET = [
   },
   {
     id: "happy-hardcore",
-    en: "Happy hardcore",
+    en: "Happy Hardcore",
     zh: "欢乐硬核",
     whereZh: "英国 · 1990s",
     whereEn: "UK · 1990s",
@@ -344,7 +344,7 @@ export const GENRES_NET = [
   },
   {
     id: "darkside-jungle",
-    en: "Darkside jungle",
+    en: "Darkside Jungle",
     zh: "暗面丛林",
     whereZh: "英国 · 伦敦 · 1993–95",
     whereEn: "London, UK · 1993–95",
@@ -374,7 +374,7 @@ export const GENRES_NET = [
   },
   {
     id: "ragga-jungle",
-    en: "Ragga jungle",
+    en: "Ragga Jungle",
     zh: "雷鬼丛林",
     whereZh: "英国 · 伦敦 · 1990s",
     whereEn: "London, UK · 1990s",
@@ -394,7 +394,7 @@ export const GENRES_NET = [
   },
   {
     id: "forest-psytrance",
-    en: "Forest psytrance",
+    en: "Forest Psytrance",
     zh: "森林迷幻电子",
     whereZh: "俄罗斯与芬兰 · 2000s",
     whereEn: "Russia & Finland · 2000s",
@@ -424,7 +424,7 @@ export const GENRES_NET = [
   },
   {
     id: "detroit-electro",
-    en: "Detroit electro",
+    en: "Detroit Electro",
     zh: "底特律电子",
     whereZh: "美国 · 底特律 · 1990s",
     whereEn: "Detroit, USA · 1990s",
@@ -434,7 +434,7 @@ export const GENRES_NET = [
   },
   {
     id: "hague-electro",
-    en: "The Hague electro",
+    en: "The Hague Electro",
     zh: "海牙电子",
     whereZh: "荷兰 · 海牙 · 1990s",
     whereEn: "The Hague, Netherlands · 1990s",
@@ -444,7 +444,7 @@ export const GENRES_NET = [
   },
   {
     id: "florida-breaks",
-    en: "Florida breaks",
+    en: "Florida Breaks",
     zh: "佛州碎拍",
     whereZh: "美国 · 奥兰多 · 1990s",
     whereEn: "Orlando, USA · 1990s",
@@ -454,7 +454,7 @@ export const GENRES_NET = [
   },
   {
     id: "clicks-and-cuts",
-    en: "Clicks & cuts",
+    en: "Clicks & Cuts",
     zh: "点击与切口",
     whereZh: "德国 · 法兰克福 · 1990s 末",
     whereEn: "Frankfurt, Germany · late 1990s",
@@ -484,7 +484,7 @@ export const GENRES_NET = [
   },
   {
     id: "harsh-noise-wall",
-    en: "Harsh noise wall",
+    en: "Harsh Noise Wall",
     zh: "噪音墙",
     whereZh: "法国与美国 · 2000s",
     whereEn: "France & USA · 2000s",
@@ -494,7 +494,7 @@ export const GENRES_NET = [
   },
   {
     id: "power-electronics",
-    en: "Power electronics",
+    en: "Power Electronics",
     zh: "力量电子",
     whereZh: "英国 · 1980s",
     whereEn: "UK · 1980s",
@@ -504,7 +504,7 @@ export const GENRES_NET = [
   },
   {
     id: "death-industrial",
-    en: "Death industrial",
+    en: "Death Industrial",
     zh: "死亡工业",
     whereZh: "瑞典 · 1990s",
     whereEn: "Sweden · 1990s",
@@ -554,7 +554,7 @@ export const GENRES_NET = [
   },
   {
     id: "demoscene-tracker",
-    en: "Demoscene tracker music",
+    en: "Demoscene Tracker Music",
     zh: "演示场景追踪器乐",
     whereZh: "北欧 · 1990s",
     whereEn: "Nordic countries · 1990s",
@@ -564,7 +564,7 @@ export const GENRES_NET = [
   },
   {
     id: "west-coast-modular",
-    en: "West Coast modular synthesis",
+    en: "West Coast Modular Synthesis",
     zh: "西岸模块合成",
     whereZh: "美国 · 加州 · 1970s 起",
     whereEn: "California, USA · 1970s on",
@@ -584,7 +584,7 @@ export const GENRES_NET = [
   },
   {
     id: "dungeon-synth",
-    en: "Dungeon synth",
+    en: "Dungeon Synth",
     zh: "地牢合成",
     whereZh: "挪威 · 1990s",
     whereEn: "Norway · 1990s",
@@ -594,7 +594,7 @@ export const GENRES_NET = [
   },
   {
     id: "winter-synth",
-    en: "Winter synth",
+    en: "Winter Synth",
     zh: "冬日合成",
     whereZh: "芬兰与美国 · 2010s",
     whereEn: "Finland & USA · 2010s",
@@ -604,7 +604,7 @@ export const GENRES_NET = [
   },
   {
     id: "ritual-dark-ambient",
-    en: "Ritual dark ambient",
+    en: "Ritual Dark Ambient",
     zh: "仪式暗黑氛围",
     whereZh: "瑞典 · 1990s",
     whereEn: "Sweden · 1990s",
@@ -624,7 +624,7 @@ export const GENRES_NET = [
   },
   {
     id: "drone-doom",
-    en: "Drone doom",
+    en: "Drone Doom",
     zh: "长音末日",
     whereZh: "美国 · 西雅图 · 1990s",
     whereEn: "Seattle, USA · 1990s",
@@ -634,7 +634,7 @@ export const GENRES_NET = [
   },
   {
     id: "funeral-doom",
-    en: "Funeral doom",
+    en: "Funeral Doom",
     zh: "葬礼末日",
     whereZh: "芬兰 · 1990s 初",
     whereEn: "Finland · early 1990s",
@@ -644,7 +644,7 @@ export const GENRES_NET = [
   },
   {
     id: "death-doom",
-    en: "Death-doom",
+    en: "Death-Doom",
     zh: "死亡末日",
     whereZh: "澳大利亚与英国 · 1990s 初",
     whereEn: "Australia & UK · early 1990s",
@@ -654,7 +654,7 @@ export const GENRES_NET = [
   },
   {
     id: "dissonant-black-metal",
-    en: "Dissonant black metal",
+    en: "Dissonant Black Metal",
     zh: "不谐黑金属",
     whereZh: "法国 · 2000s",
     whereEn: "France · 2000s",
@@ -674,7 +674,7 @@ export const GENRES_NET = [
   },
   {
     id: "war-metal",
-    en: "War metal / bestial black",
+    en: "War Metal / Bestial Black",
     zh: "战争金属",
     whereZh: "加拿大 · 温哥华 · 1990s",
     whereEn: "Vancouver, Canada · 1990s",
@@ -684,7 +684,7 @@ export const GENRES_NET = [
   },
   {
     id: "atmospheric-sludge",
-    en: "Atmospheric sludge / post-metal",
+    en: "Atmospheric Sludge / Post-Metal",
     zh: "氛围泥浆金属",
     whereZh: "美国 · 旧金山湾区 · 1990s",
     whereEn: "San Francisco Bay Area, USA · 1990s",
@@ -734,7 +734,7 @@ export const GENRES_NET = [
   },
   {
     id: "skramz",
-    en: "Skramz / emoviolence",
+    en: "Skramz / Emoviolence",
     zh: "尖叫情绪核",
     whereZh: "美国 · 新英格兰 · 1990s",
     whereEn: "New England, USA · 1990s",
@@ -744,7 +744,7 @@ export const GENRES_NET = [
   },
   {
     id: "egg-punk",
-    en: "Egg punk",
+    en: "Egg Punk",
     zh: "蛋朋克",
     whereZh: "美国 · 中西部 · 2010s",
     whereEn: "US Midwest · 2010s",
@@ -754,7 +754,7 @@ export const GENRES_NET = [
   },
   {
     id: "kbd-punk",
-    en: "KBD punk",
+    en: "KBD Punk",
     zh: "KBD 朋克",
     whereZh: "欧美各地 · 1970s 末–80s 初",
     whereEn: "Europe & USA · late 1970s–early 1980s",
@@ -764,7 +764,7 @@ export const GENRES_NET = [
   },
   {
     id: "d-beat",
-    en: "D-beat",
+    en: "D-Beat",
     zh: "D 拍",
     whereZh: "瑞典 · 1980s",
     whereEn: "Sweden · 1980s",
@@ -774,7 +774,7 @@ export const GENRES_NET = [
   },
   {
     id: "anarcho-punk",
-    en: "Anarcho-punk",
+    en: "Anarcho-Punk",
     zh: "无政府朋克",
     whereZh: "英国 · 1980s",
     whereEn: "UK · 1980s",
@@ -784,7 +784,7 @@ export const GENRES_NET = [
   },
   {
     id: "riot-grrrl",
-    en: "Riot grrrl",
+    en: "Riot Grrrl",
     zh: "暴女",
     whereZh: "美国 · 奥林匹亚 · 1990s 初",
     whereEn: "Olympia, USA · early 1990s",
@@ -804,7 +804,7 @@ export const GENRES_NET = [
   },
   {
     id: "no-wave",
-    en: "No wave",
+    en: "No Wave",
     zh: "无浪潮",
     whereZh: "美国 · 纽约 · 1970s 末",
     whereEn: "New York, USA · late 1970s",
@@ -814,7 +814,7 @@ export const GENRES_NET = [
   },
   {
     id: "mutant-disco",
-    en: "Mutant disco",
+    en: "Mutant Disco",
     zh: "变种迪斯科",
     whereZh: "美国 · 纽约 · 1980s 初",
     whereEn: "New York, USA · early 1980s",
@@ -834,7 +834,7 @@ export const GENRES_NET = [
   },
   {
     id: "minimal-wave",
-    en: "Minimal wave",
+    en: "Minimal Wave",
     zh: "极简浪潮",
     whereZh: "欧洲 · 1980s",
     whereEn: "Europe · 1980s",
@@ -844,7 +844,7 @@ export const GENRES_NET = [
   },
   {
     id: "witch-house",
-    en: "Witch house",
+    en: "Witch House",
     zh: "巫浩室",
     whereZh: "美国 · 2010s 初",
     whereEn: "USA · early 2010s",
@@ -854,7 +854,7 @@ export const GENRES_NET = [
   },
   {
     id: "cloud-rap",
-    en: "Cloud rap",
+    en: "Cloud Rap",
     zh: "云端说唱",
     whereZh: "美国 · 奥克兰与网络 · 2010s 初",
     whereEn: "Oakland & the internet · early 2010s",
@@ -864,7 +864,7 @@ export const GENRES_NET = [
   },
   {
     id: "memphis-phonk",
-    en: "Memphis rap (phonk source)",
+    en: "Memphis Rap (Phonk Source)",
     zh: "孟菲斯磁带说唱",
     whereZh: "美国 · 孟菲斯 · 1990s",
     whereEn: "Memphis, USA · 1990s",
@@ -874,7 +874,7 @@ export const GENRES_NET = [
   },
   {
     id: "drift-phonk",
-    en: "Drift phonk",
+    en: "Drift Phonk",
     zh: "飘移放克",
     whereZh: "俄罗斯与网络 · 2020s",
     whereEn: "Russia & the internet · 2020s",
@@ -884,7 +884,7 @@ export const GENRES_NET = [
   },
   {
     id: "chopped-and-screwed",
-    en: "Chopped and screwed",
+    en: "Chopped And Screwed",
     zh: "减速切碎",
     whereZh: "美国 · 休斯顿 · 1990s",
     whereEn: "Houston, USA · 1990s",
@@ -894,7 +894,7 @@ export const GENRES_NET = [
   },
   {
     id: "trap-metal",
-    en: "Trap metal",
+    en: "Trap Metal",
     zh: "陷阱金属",
     whereZh: "美国 · 佛罗里达 · 2010s",
     whereEn: "Florida, USA · 2010s",
@@ -904,7 +904,7 @@ export const GENRES_NET = [
   },
   {
     id: "uk-drill",
-    en: "UK drill",
+    en: "UK Drill",
     zh: "英式钻头说唱",
     whereZh: "英国 · 南伦敦 · 2010s",
     whereEn: "South London, UK · 2010s",
@@ -914,7 +914,7 @@ export const GENRES_NET = [
   },
   {
     id: "chicago-drill",
-    en: "Chicago drill",
+    en: "Chicago Drill",
     zh: "芝加哥钻头说唱",
     whereZh: "美国 · 芝加哥南区 · 2010s 初",
     whereEn: "South Side Chicago, USA · early 2010s",
@@ -944,7 +944,7 @@ export const GENRES_NET = [
   },
   {
     id: "sp1200-boom-bap",
-    en: "SP-1200 boom bap",
+    en: "SP-1200 Boom Bap",
     zh: "SP-1200 低保真说唱",
     whereZh: "美国 · 纽约 · 1990s 初",
     whereEn: "New York, USA · early 1990s",
@@ -954,7 +954,7 @@ export const GENRES_NET = [
   },
   {
     id: "experimental-hip-hop",
-    en: "Experimental hip-hop",
+    en: "Experimental Hip-Hop",
     zh: "实验说唱",
     whereZh: "美国 · 洛杉矶 · 2010s",
     whereEn: "Los Angeles, USA · 2010s",
@@ -974,7 +974,7 @@ export const GENRES_NET = [
   },
   {
     id: "future-funk",
-    en: "Future funk",
+    en: "Future Funk",
     zh: "未来放克",
     whereZh: "网络 · 2010s",
     whereEn: "The internet · 2010s",
@@ -994,7 +994,7 @@ export const GENRES_NET = [
   },
   {
     id: "digicore",
-    en: "Digicore / glitchcore",
+    en: "Digicore / Glitchcore",
     zh: "数字核",
     whereZh: "网络 · 2020s",
     whereEn: "The internet · 2020s",
@@ -1014,7 +1014,7 @@ export const GENRES_NET = [
   },
   {
     id: "hypnagogic-pop",
-    en: "Hypnagogic pop",
+    en: "Hypnagogic Pop",
     zh: "半梦流行",
     whereZh: "美国 · 2000s 末",
     whereEn: "USA · late 2000s",
@@ -1044,7 +1044,7 @@ export const GENRES_NET = [
   },
   {
     id: "wonky",
-    en: "Wonky / instrumental beat scene",
+    en: "Wonky / Instrumental Beat Scene",
     zh: "歪拍器乐说唱",
     whereZh: "美国 · 洛杉矶 · 2000s 末",
     whereEn: "Los Angeles, USA · late 2000s",
