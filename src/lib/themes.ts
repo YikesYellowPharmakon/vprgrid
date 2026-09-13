@@ -1,12 +1,13 @@
 /** 皮肤只换色彩、字体、材质与动效；信息结构（周 / 专辑 / 艺人 / 标签）不变。 */
 import { syncMatrixRain } from "./matrix-rain";
 
-export type ThemeId = "matrix" | "cyber-neon" | "grainy-blur" | "red-alert" | "custom";
+export type ThemeId = "matrix" | "red-alert" | "custom";
 
-/** 旧版存储里的主题 id 兑换:下线主题与 GRAIN / PictoChat 落到 Matrix,Cybercore 落到 Red Alert。 */
+/** 旧版存储里的主题 id 兑换:下线主题落到 Matrix,Cybercore 落到 Red Alert。 */
 export function normalizeThemeId(id: unknown): ThemeId {
   if (id === "cybercore") return "red-alert";
-  const valid: ThemeId[] = ["matrix", "cyber-neon", "grainy-blur", "red-alert", "custom"];
+  if (id === "cyber-neon" || id === "grainy-blur") return "matrix";
+  const valid: ThemeId[] = ["matrix", "red-alert", "custom"];
   return valid.includes(id as ThemeId) ? (id as ThemeId) : "matrix";
 }
 
@@ -17,15 +18,19 @@ export type CustomTheme = {
   accent: string;
   /** 背景图 URL,可留空。 */
   image: string;
-  texture: "none" | "grain" | "grid" | "glow";
+  texture: "none" | "grain" | "grid";
 };
+
+export function normalizeCustomTexture(v: unknown): CustomTheme["texture"] {
+  return v === "grain" || v === "grid" ? v : "none";
+}
 
 export const DEFAULT_CUSTOM: CustomTheme = {
   bg: "#101014",
   fg: "#ece9f1",
   accent: "#8ab4ff",
   image: "",
-  texture: "grain",
+  texture: "none",
 };
 
 export type ThemeDef = {
@@ -38,10 +43,8 @@ export type ThemeDef = {
 
 export const THEMES: ThemeDef[] = [
   { id: "matrix", label: "Matrix", note: "磷光绿 · 迪客帝国(默认)", swatch: ["#020703", "#8dffa3", "#00ff66"] },
-  { id: "cyber-neon", label: "Cyber Neon", note: "霓虹夜城 · 探照灯扫掠", swatch: ["#0a0716", "#e8f4ff", "#00e5ff"] },
-  { id: "grainy-blur", label: "Grainy Blur", note: "颗粒噪点 · 六团弥散光斑", swatch: ["#141019", "#f2ecf6", "#c9a0ff"] },
   { id: "red-alert", label: "Red Alert", note: "苏式警报红 · 雷达扫掠", swatch: ["#130604", "#f5e6dc", "#ff2b1f"] },
-  { id: "custom", label: "自定义", note: "自选背景图 / 颜色 / 纹理", swatch: ["#101014", "#ece9f1", "#8ab4ff"] },
+  { id: "custom", label: "自定义", note: "自选底色 / 文字 / 强调色", swatch: ["#101014", "#ece9f1", "#8ab4ff"] },
 ];
 
 const CUSTOM_VARS = [
@@ -72,6 +75,7 @@ export function applyTheme(theme: ThemeId, custom?: CustomTheme) {
   if (theme !== "custom") {
     for (const v of CUSTOM_VARS) st.removeProperty(v);
     el.removeAttribute("data-custom-texture");
+    el.removeAttribute("data-custom-image");
     return;
   }
   const c = custom ?? DEFAULT_CUSTOM;
@@ -91,6 +95,12 @@ export function applyTheme(theme: ThemeId, custom?: CustomTheme) {
     "--shadow-border-hover",
     `0 0 0 1px ${mix(c.accent, 55, "transparent")}, 0 8px 28px ${mix(c.bg, 40, "transparent")}`,
   );
-  st.setProperty("--custom-bg-image", c.image ? `url("${c.image.replace(/["\\]/g, "")}")` : "none");
-  el.setAttribute("data-custom-texture", c.texture);
+  if (c.image) {
+    st.setProperty("--custom-bg-image", `url("${c.image.replace(/["\\]/g, "")}")`);
+    el.setAttribute("data-custom-image", "");
+  } else {
+    st.setProperty("--custom-bg-image", "none");
+    el.removeAttribute("data-custom-image");
+  }
+  el.setAttribute("data-custom-texture", normalizeCustomTexture(c.texture));
 }

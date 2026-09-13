@@ -2,8 +2,6 @@
 (() => {
   const PALETTES = {
     matrix: { bg: "#020703", fg: "#8dffa3", accent: "#00ff66" },
-    "cyber-neon": { bg: "#0a0716", fg: "#e8f4ff", accent: "#00e5ff" },
-    "grainy-blur": { bg: "#141019", fg: "#f2ecf6", accent: "#c9a0ff" },
     "red-alert": { bg: "#130604", fg: "#f5e6dc", accent: "#ff2b1f" },
   };
 

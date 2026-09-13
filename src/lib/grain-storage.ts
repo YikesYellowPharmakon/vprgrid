@@ -94,7 +94,7 @@ export const grainStorage = {
       for (const k of HEAVY_FIELDS) {
         if (heavy && k in heavy) state[k] = heavy[k];
       }
-      return JSON.stringify({ state, version: light?.version ?? 13 });
+      return JSON.stringify({ state, version: light?.version ?? 14 });
     } finally {
       hydratedOnce = true;
     }

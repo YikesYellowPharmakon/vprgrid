@@ -81,123 +81,6 @@ html[data-theme="matrix"] #bgfx::before {
   background-image: none;
   animation: none;
 }
-/* ————— Cyber Neon ————— */
-html[data-theme="cyber-neon"] {
-  --bg: #0a0716;
-  --surface: #140f26;
-  --raised: #1e1738;
-  --fg: #eaf2ff;
-  --muted: #9aa4d6;
-  --subtle: #656fa3;
-  --accent: #00e5ff;
-  --border: rgb(0 229 255 / 0.18);
-  --card-r: 10px;
-  --card-line: 0 0 0 1px rgb(0 229 255 / 0.2), 0 0 18px rgb(255 61 242 / 0.06);
-  --card-line-hover: 0 0 0 1px rgb(0 229 255 / 0.5), 0 0 22px rgb(0 229 255 / 0.22);
-  --font-body: "Space Grotesk", "Trebuchet MS", "PingFang SC", sans-serif;
-  --font-display: "Space Grotesk", "Trebuchet MS", "PingFang SC", sans-serif;
-  background-image:
-    radial-gradient(60% 42% at 82% -6%, rgb(255 61 242 / 0.18), transparent 60%),
-    radial-gradient(55% 40% at 8% 4%, rgb(0 229 255 / 0.16), transparent 60%),
-    radial-gradient(75% 42% at 50% 110%, rgb(255 61 242 / 0.16), transparent 66%),
-    radial-gradient(90% 22% at 50% 104%, rgb(255 170 80 / 0.12), transparent 70%),
-    radial-gradient(rgb(0 229 255 / 0.07) 1px, transparent 1.3px),
-    repeating-linear-gradient(90deg, transparent 0 118px, rgb(0 229 255 / 0.05) 118px 120px, transparent 120px 236px),
-    linear-gradient(rgb(0 229 255 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(0 229 255 / 0.05) 1px, transparent 1px),
-    linear-gradient(rgb(255 61 242 / 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 61 242 / 0.035) 1px, transparent 1px);
-  background-size: auto, auto, auto, auto, 26px 34px, auto, 44px 44px, 44px 44px, 176px 176px, 176px 176px;
-}
-html[data-theme="cyber-neon"] #bgfx {
-  background-image: linear-gradient(112deg, transparent 0 43%, rgb(0 229 255 / 0.06) 49%, rgb(255 61 242 / 0.04) 53%, transparent 60%);
-  background-size: 260% 100%;
-  background-repeat: no-repeat;
-  animation: fx-neon-search 26s ease-in-out infinite alternate;
-}
-html[data-theme="cyber-neon"] #bgfx::before {
-  inset: -22%;
-  background-image:
-    radial-gradient(26% 22% at 28% 32%, rgb(0 229 255 / 0.15), transparent 72%),
-    radial-gradient(24% 20% at 74% 66%, rgb(255 61 242 / 0.15), transparent 72%),
-    radial-gradient(20% 16% at 56% 88%, rgb(255 170 80 / 0.1), transparent 72%);
-  background-repeat: no-repeat;
-  animation: fx-neon-orbit 44s ease-in-out infinite alternate;
-}
-html[data-theme="cyber-neon"] #bgfx::after {
-  background-image:
-    radial-gradient(rgb(234 242 255 / 0.15) 1px, transparent 1.5px),
-    radial-gradient(rgb(0 229 255 / 0.1) 1px, transparent 1.8px);
-  background-size: 110px 110px, 220px 220px;
-  will-change: background-position;
-  animation: fx-neon-stars 60s linear infinite, fx-neon-twinkle 5s ease-in-out infinite alternate;
-}
-@keyframes fx-neon-search { from { background-position: 0% 0; } to { background-position: 100% 0; } }
-@keyframes fx-neon-orbit {
-  from { transform: translate3d(-3.5%, -2.5%, 0) scale(1); }
-  to { transform: translate3d(3.5%, 2.5%, 0) scale(1.1); }
-}
-@keyframes fx-neon-stars {
-  from { background-position: 0 0, 70px 30px; }
-  to { background-position: 660px 660px, 510px 250px; }
-}
-@keyframes fx-neon-twinkle { from { opacity: 0.45; } to { opacity: 1; } }
-
-/* ————— Grainy Blur ————— */
-html[data-theme="grainy-blur"] {
-  --bg: #141019;
-  --surface: #1d1726;
-  --raised: #282033;
-  --fg: #f2ecf6;
-  --muted: #b3a6c4;
-  --subtle: #7f7392;
-  --accent: #c9a0ff;
-  --border: rgb(242 236 246 / 0.1);
-  --card-r: 12px;
-  --card-line: 0 0 0 1px rgb(242 236 246 / 0.08);
-  --card-line-hover: 0 0 0 1px rgb(201 160 255 / 0.35);
-  --font-body: "IBM Plex Sans", "Helvetica Neue", "PingFang SC", sans-serif;
-  --font-display: "IBM Plex Sans", "Helvetica Neue", "PingFang SC", sans-serif;
-  background-image:
-    conic-gradient(from 210deg at 68% 38%, rgb(201 160 255 / 0.06), transparent 28%, rgb(96 165 250 / 0.06) 55%, transparent 78%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
-  background-size: auto, 140px 140px;
-  background-blend-mode: normal, overlay;
-}
-html[data-theme="grainy-blur"] #bgfx {
-  background-image: linear-gradient(150deg, transparent 0 44%, rgb(201 160 255 / 0.06) 52%, transparent 62%);
-  background-size: 240% 100%;
-  background-repeat: no-repeat;
-  animation: fx-blur-beam 36s ease-in-out infinite alternate;
-}
-html[data-theme="grainy-blur"] #bgfx::before {
-  inset: -20%;
-  background-image:
-    radial-gradient(34% 28% at 24% 16%, rgb(201 160 255 / 0.26), transparent 72%),
-    radial-gradient(32% 28% at 80% 22%, rgb(255 158 118 / 0.2), transparent 72%),
-    radial-gradient(24% 20% at 68% 52%, rgb(94 234 212 / 0.1), transparent 72%);
-  background-repeat: no-repeat;
-  animation: fx-blob-a 42s ease-in-out infinite alternate;
-}
-html[data-theme="grainy-blur"] #bgfx::after {
-  inset: -20%;
-  background-image:
-    radial-gradient(38% 32% at 56% 84%, rgb(96 165 250 / 0.18), transparent 72%),
-    radial-gradient(28% 24% at 26% 62%, rgb(244 114 182 / 0.14), transparent 72%),
-    radial-gradient(22% 18% at 88% 78%, rgb(240 201 135 / 0.12), transparent 72%);
-  background-repeat: no-repeat;
-  animation: fx-blob-b 58s ease-in-out infinite alternate-reverse;
-}
-@keyframes fx-blur-beam { from { background-position: 0% 0; } to { background-position: 100% 0; } }
-@keyframes fx-blob-a {
-  from { transform: translate3d(-4%, -3%, 0) scale(1) rotate(0deg); }
-  to { transform: translate3d(5%, 4%, 0) scale(1.14) rotate(6deg); }
-}
-@keyframes fx-blob-b {
-  from { transform: translate3d(4%, 3%, 0) scale(1.1) rotate(4deg); }
-  to { transform: translate3d(-5%, -4%, 0) scale(1) rotate(-4deg); }
-}
-
 /* ————— Red Alert(苏式警报红:战术网格 + 雷达扫掠 + 警报灯 + 数据刻度) ————— */
 html[data-theme="red-alert"] {
   --bg: #130604;
@@ -310,18 +193,15 @@ html[data-theme="red-alert"] #bgfx::after {
   to { opacity: 1; }
 }
 
-/* ————— 自定义主题兜底(data-theme="synced"):配色由内联变量注入 ————— */
+/* ————— 自定义主题兜底(data-theme="synced"):配色由内联变量注入，纯色无光晕 ————— */
 html[data-theme="synced"] {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
+  background-color: var(--bg, #101014);
+  background-image: none;
 }
-html[data-theme="synced"] #bgfx::before {
-  inset: -20%;
-  background-image:
-    radial-gradient(30% 24% at 22% 14%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
-    radial-gradient(26% 22% at 82% 88%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
-  background-repeat: no-repeat;
-  animation: fx-neon-orbit 48s ease-in-out infinite alternate;
+html[data-theme="synced"] #bgfx::before,
+html[data-theme="synced"] #bgfx::after {
+  background-image: none;
+  animation: none;
 }
 
 /* 主题字体接管(有 --font-body 的主题生效) */

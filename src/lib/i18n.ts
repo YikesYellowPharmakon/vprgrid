@@ -58,6 +58,8 @@ const zh = {
 
   /* 列表区 */
   tabWeek: "本周新专",
+  tabMonth: "本月新专",
+  tabCustom: "时段新专",
   tabSaved: "列表",
   listDefaultName: "收藏",
   listNew: "新建列表",
@@ -331,7 +333,7 @@ const zh = {
   bgImage: "背景图(可选)",
   phBgImage: "粘贴图片链接,留空即纯色底",
   texture: "纹理",
-  textures: { none: "无纹理", grain: "颗粒", grid: "网格", glow: "光晕" } as Record<string, string>,
+  textures: { none: "无纹理", grain: "颗粒", grid: "网格" } as Record<string, string>,
 
   /* 参考设置面板 */
   refTitle: "参考设置",
@@ -530,6 +532,8 @@ const en: Dict = {
   childrenTag: "Genres ",
 
   tabWeek: "This week",
+  tabMonth: "This month",
+  tabCustom: "This period",
   tabSaved: "Lists",
   listDefaultName: "Saved",
   listNew: "New list",
@@ -799,7 +803,7 @@ const en: Dict = {
   bgImage: "Backdrop image (optional)",
   phBgImage: "Paste an image URL — empty means solid color",
   texture: "Texture",
-  textures: { none: "None", grain: "Grain", grid: "Grid", glow: "Glow" },
+  textures: { none: "None", grain: "Grain", grid: "Grid" },
 
   refTitle: "Reference settings",
   refIntro:
@@ -964,8 +968,6 @@ export function getDict(lang: Lang): Dict {
 /** 主题描述(themes.ts 的 note 为中文,这里给英文对照)。 */
 export const THEME_NOTES_EN: Record<string, string> = {
   matrix: "Phosphor green · digital rain (default)",
-  "cyber-neon": "Neon night city · searchlight sweep",
-  "grainy-blur": "Grain noise · six drifting blobs",
   "red-alert": "Soviet alarm red · radar sweep",
-  custom: "Your own backdrop / colors / texture",
+  custom: "Your own colors, optional backdrop and texture",
 };

@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Sheet, SheetContent } from "./ui/sheet";
 
-const TEXTURE_IDS: Array<CustomTheme["texture"]> = ["none", "grain", "grid", "glow"];
+const TEXTURE_IDS: Array<CustomTheme["texture"]> = ["none", "grain", "grid"];
 
 function ColorField({
   label,

@@ -1188,7 +1188,7 @@ export function GrainApp({ initial, openLink = {} }: { initial: WeekCatalog; ope
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-1 rounded-md bg-raised p-1">
             <TabBtn on={tab === "week"} onClick={() => setTab("week")}>
-              {t.tabWeek}
+              {grain === "month" ? t.tabMonth : grain === "custom" ? t.tabCustom : t.tabWeek}
             </TabBtn>
             <TabBtn on={tab === "saved"} onClick={() => setTab("saved")}>
               <List className="size-3.5" />

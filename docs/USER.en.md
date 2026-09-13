@@ -117,9 +117,9 @@ The key lives in your browser (`localStorage`). Calls go through this app’s se
 
 ## Skins
 
-The palette icon switches 11 skins: **Matrix (default) / Cyber Neon / Grainy Blur / Red Alert / Y2K Futurism / Utopian Virtual / Metalheart / Liminal Space / Frutiger Aero / Indie Kid / Custom**. Only color, type, and material change. The choice is remembered. Each skin has a live backdrop (Matrix rain, neon city, grain blooms, command-room grid, chrome orbs, and so on). Motion sits under the content; **Reduce motion** freezes it.
+The palette icon switches 3 skins: **Matrix (default) / Red Alert / Custom**. Only color, type, and material change. The choice is remembered. Matrix has the digital rain; Red Alert has the command-room grid. Motion sits under the content; **Reduce motion** freezes it.
 
-**Custom palette**: pick background / text / accent (the rest is derived), optional image URL as a full-bleed backdrop (a dark veil keeps type readable), plus a texture (none / grain / grid / glow). Any edit switches to **Custom** immediately.
+**Custom palette**: pick background / text / accent (the rest is derived). Default is a flat color with no glow. Optional image URL as a full-bleed backdrop (a dark veil keeps type readable), plus a texture (none / grain / grid). Any edit switches to **Custom** immediately.
 
 ## Saves, lists, hide
 

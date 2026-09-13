@@ -760,12 +760,14 @@ async function writePeriodWall(periodKey, taste, data) {
 }
 
 /** 插件内置动效主题(与应用同源,themes.css 全套接管配色 + 背景 + 动画)。 */
-const BUILTIN_THEMES = new Set(["matrix", "cyber-neon", "grainy-blur", "red-alert"]);
+const BUILTIN_THEMES = new Set(["matrix", "red-alert"]);
 /** 已下线主题的旧同步码兑底:GRAIN / PictoChat / 美学套件落到 Matrix,Cybercore 落到 Red Alert。 */
 const LEGACY_THEME_MAP = {
   default: "matrix",
   pictochat: "matrix",
   cybercore: "red-alert",
+  "cyber-neon": "matrix",
+  "grainy-blur": "matrix",
   y2k: "matrix",
   "utopian-virtual": "matrix",
   metalheart: "matrix",
@@ -775,8 +777,6 @@ const LEGACY_THEME_MAP = {
 };
 const THEME_PAINT = {
   matrix: { bg: "#020703", fg: "#8dffa3", accent: "#00ff66" },
-  "cyber-neon": { bg: "#0a0716", fg: "#e8f4ff", accent: "#00e5ff" },
-  "grainy-blur": { bg: "#141019", fg: "#f2ecf6", accent: "#c9a0ff" },
   "red-alert": { bg: "#130604", fg: "#f5e6dc", accent: "#ff2b1f" },
 };
 

@@ -26,6 +26,7 @@ screenshots/
 scripts/.promo-covers/
 scripts/.promo-newtab.out.html
 scripts/.promo-overview.out.html
+promo/.chrome-profile/
 artifacts/
 *.log
 .grok/preview.log

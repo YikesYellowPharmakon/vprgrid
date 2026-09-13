@@ -42,7 +42,14 @@ import {
   type UserList,
 } from "./catalog/lists";
 import type { CoverReading, ScoreWeights } from "./catalog/types";
-import { applyTheme, DEFAULT_CUSTOM, normalizeThemeId, type CustomTheme, type ThemeId } from "./themes";
+import {
+  applyTheme,
+  DEFAULT_CUSTOM,
+  normalizeCustomTexture,
+  normalizeThemeId,
+  type CustomTheme,
+  type ThemeId,
+} from "./themes";
 
 type GrainState = {
   taste: string[];
@@ -191,7 +198,7 @@ export const useGrain = create<GrainState>()(
       },
       setLang: (l) => set({ lang: l }),
       setCustomTheme: (c) => {
-        const next = { ...get().customTheme, ...c };
+        const next = { ...get().customTheme, ...c, texture: normalizeCustomTexture(c.texture ?? get().customTheme.texture) };
         set({ customTheme: next });
         applyTheme(get().theme, next);
       },
@@ -473,7 +480,7 @@ export const useGrain = create<GrainState>()(
       name: isPublicDemo ? "vprgrid-demo-v4" : "grain-friday-v4",
       skipHydration: true,
       storage: createJSONStorage(() => grainStorage),
-      version: 13,
+      version: 14,
       partialize: (s) => ({
         taste: s.taste,
         weights: s.weights,
@@ -580,6 +587,12 @@ export const useGrain = create<GrainState>()(
         if (version < 13) {
           const next = s as { taste?: string[] };
           next.taste = normalizePersistedTaste(Array.isArray(next.taste) ? next.taste : []);
+        }
+        // v13 → v14:Cyber Neon / Grainy Blur 下线;自定义去掉光晕纹理
+        if (version < 14) {
+          (s as { theme?: unknown }).theme = normalizeThemeId((s as { theme?: unknown }).theme);
+          const ct = (s as { customTheme?: CustomTheme }).customTheme;
+          if (ct) ct.texture = normalizeCustomTexture(ct.texture);
         }
         return s;
       },
